@@ -395,6 +395,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1282223226878882586, guid: 77b83f73d5445744abb8c6e91d8daf35, type: 3}
+      propertyPath: m_CellLayout
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3240154867716466440, guid: 77b83f73d5445744abb8c6e91d8daf35, type: 3}
       propertyPath: m_LocalPosition.z
       value: 2
@@ -139247,6 +139251,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1378329315}
   m_SourcePrefab: {fileID: 100100000, guid: 77b83f73d5445744abb8c6e91d8daf35, type: 3}
+--- !u!4 &583496816 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4241348530252852585, guid: 77b83f73d5445744abb8c6e91d8daf35, type: 3}
+  m_PrefabInstance: {fileID: 583496815}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
