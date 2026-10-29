@@ -302,6 +302,7 @@ Tilemap:
   m_GameObject: {fileID: 1291896586}
   m_Enabled: 1
   m_Tiles: {}
+  m_Tiles: {}
   m_AnimatedTiles: {}
   m_TileAssetArray:
   - serializedVersion: 2
@@ -387,6 +388,7 @@ TilemapRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
+  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 32
   m_MaxFrameAge: 64
@@ -487,7 +489,9 @@ CompositeCollider2D:
   m_ColliderPaths:
   - m_Collider: {fileID: 1291896590}
     m_ColliderPaths: []
+    m_ColliderPaths: []
   m_CompositePaths:
+    m_Paths: []
     m_Paths: []
   m_VertexDistance: 0.0005
   m_OffsetDistance: 0.00005
