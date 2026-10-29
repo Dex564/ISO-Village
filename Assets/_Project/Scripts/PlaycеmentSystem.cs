@@ -65,7 +65,6 @@ public class PlacementSystem : MonoBehaviour
         ghostObject.transform.position = position;
         Physics2D.SyncTransforms();
 
-        // Проверяем расстояние до домов внутри общего Grid.
         foreach (Transform child in grid.transform)
         {
             PolygonCollider2D houseCollider = child.GetComponent<PolygonCollider2D>();
@@ -82,7 +81,6 @@ public class PlacementSystem : MonoBehaviour
                 return false;
         }
 
-        // Проверяем пересечение оснований.
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(blockingLayers);
         filter.useTriggers = true;
