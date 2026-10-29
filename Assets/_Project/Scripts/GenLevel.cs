@@ -12,45 +12,51 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] private TileBase collisionTile;
 
     [SerializeField] private int size = 100;
-    [SerializeField] private float scale = 0.1f;
+    [SerializeField] private float scale = 0.7f;
+
+    void Start()
+    {
+        levelTilemap.ClearAllTiles();
+        GenerateLevel();
+        GenerateLevelCollisions();
+    }
 
     public void GenerateLevel()
     {
-
-        levelTilemap.ClearAllTiles();
-
-        TileBase[] tileMap = new TileBase[size * size];
-        TileBase[] collisionMap = new TileBase[size * size];
+        TileBase[] tileMap = new TileBase[(size) * (size)];
 
         for (int x = 0; x < size; x++)
         {
             for (int y = 0; y < size; y++)
             {
                 int index = x + y * size;
+                float n = Mathf.PerlinNoise(x * scale, y * scale);
+                tileMap[index] = (n > 0.21f) ? dirt : stone;
+            }
+        }
 
-                if (x == 0 || x == size-1)
+        levelTilemap.SetTilesBlock(new BoundsInt(-size / 2, -size / 2 , 0, size, size, 1), tileMap);
+    }
+
+    void GenerateLevelCollisions()
+    {
+        TileBase[] collisionMap = new TileBase[(size + 2) * (size + 2)];
+
+        for (int x = 0; x < size + 2; x++)
+        {
+            for (int y = 0; y < size + 2; y++)
+            {
+                int index = x + y * (size + 2);
+                if (y == 0 || y == size + 1)
                 {
                     collisionMap[index] = collisionTile;
-                } else if (y == 0 || y == size -1)
+                } else if (x == 0 || x == size + 1)
                 {
                     collisionMap[index] = collisionTile;
-                } else
-                {
-                    float n = Mathf.PerlinNoise(x * scale, y * scale);
-                    
-                    tileMap[index] = (n > 0.21f) ? dirt : stone;
                 }
             }
         }
 
-        levelTilemap.SetTilesBlock(new BoundsInt(0, 0, 0, size, size, 1), tileMap);
-        collisionTilemap.SetTilesBlock(new BoundsInt(0, 0, 0, size, size, 1), collisionMap);
-
-        Debug.Log($"Generated {size}x{size} floor");
-    }
-
-    void Start()
-    {
-        GenerateLevel();
+        collisionTilemap.SetTilesBlock(new BoundsInt(-(size)/2 - 1, -(size)/2 - 1, 0, size + 2, size + 2, 1), collisionMap);
     }
 }
