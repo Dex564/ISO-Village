@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 16618e5c14cdfa1478f70647af843106
+guid: 5cc1a884518c2cd4eb5c85a0ad8040f8
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8581363780399802525
-    second: clock_0
+      213: 1944473555287263836
+    second: thatched_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +51,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 48
+  spritePixelsToUnits: 64
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -102,13 +102,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: clock_0
+      name: thatched_0
       rect:
         serializedVersion: 2
         x: 0
         y: 1
         width: 128
-        height: 240
+        height: 115
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -117,8 +117,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d98222b64e0271770800000000000000
-      internalID: 8581363780399802525
+      spriteID: c5ac90275682cfa10800000000000000
+      internalID: 1944473555287263836
       vertices: []
       indices: 
       edges: []
@@ -127,7 +127,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 0f6046bfd980ad341ac3a620b2b703b1
+    spriteID: a267bdb6d0f13af47aee96f7989ccab1
     internalID: 0
     vertices: []
     indices: 
@@ -139,7 +139,7 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":128.0,"y":158.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      clock_0: 8581363780399802525
+      thatched_0: 1944473555287263836
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
