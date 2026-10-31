@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlacementSystem : MonoBehaviour
 {
@@ -16,6 +17,34 @@ public class PlacementSystem : MonoBehaviour
     private bool isPlacing;
     private PolygonCollider2D placementCollider;
     private readonly List<Collider2D> overlaps = new List<Collider2D>();
+    [SerializeField] private InputActionReference placeAction;
+
+    private void OnEnable()
+    {
+        if (placeAction != null && placeAction.action != null)
+        {
+            placeAction.action.performed += OnPlacePerformed;
+            placeAction.action.Enable();
+        }
+        else
+        {
+            Debug.LogError("[TilePlacer] Input Action Reference не назначен!");
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (placeAction != null && placeAction.action != null)
+        {
+            placeAction.action.performed -= OnPlacePerformed;
+            placeAction.action.Disable();
+        }
+    }
+
+    private void OnPlacePerformed(InputAction.CallbackContext context)
+    {
+        StartPlacing();
+    }
 
     private void Awake()
     {
