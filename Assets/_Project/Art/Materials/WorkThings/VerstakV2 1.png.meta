@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1034c91dc8a459444ab33820f028b68b
+guid: 5bbd6705289c58a4c8d34b2183d0264d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6046999049461004710
-    second: VerstakV2_0
+      213: 456563696915378468
+    second: VerstakV2 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -102,7 +102,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: VerstakV2_0
+      name: VerstakV2 1_0
       rect:
         serializedVersion: 2
         x: 0
@@ -110,15 +110,15 @@ TextureImporter:
         width: 48
         height: 40
       alignment: 9
-      pivot: {x: 0.5, y: 0.25}
+      pivot: {x: 0.33333334, y: 0.4}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6a97f3cd8914be350800000000000000
-      internalID: 6046999049461004710
+      spriteID: 421fafb634a065600800000000000000
+      internalID: 456563696915378468
       vertices: []
       indices: 
       edges: []
@@ -127,7 +127,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 33b8354455c675043a1fa85aa215e2d3
+    spriteID: ef9fbce007f6ae04ea4159fff09cd010
     internalID: 0
     vertices: []
     indices: 
@@ -137,9 +137,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.375,"y":0.15625},"pivotPixels":{"x":24.0,"y":10.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.25,"y":0.25},"pivotPixels":{"x":16.0,"y":16.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":1,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      VerstakV2_0: 6046999049461004710
+      VerstakV2 1_0: 456563696915378468
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
