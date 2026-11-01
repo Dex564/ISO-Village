@@ -1,34 +1,27 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class IsometricPlayerController : MonoBehaviour
 {
-    [Header("Player Settings")]
-    public float moveSpeed = 5f;
+
+    // linter suggestion
+    private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
+
+    private static readonly int YHash = Animator.StringToHash("Y");
+
+    private static readonly int XHash = Animator.StringToHash("X");
 
     private Rigidbody2D rb;
+    private Vector2 currentVelocity;
     private Vector2 inputVector;
-    private PlayerControls controls;
 
-    [Header("Player Input Settings")]
-    public bool isoMovement;
-    public Vector2 isoRight = new Vector2(1, 0.5f);
-    public Vector2 isoUp = new Vector2(-1, 0.5f);
+    [Header("Player Settings")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float acceleration = 50f;
+    [SerializeField] private float deceleration = 30f;
+    [SerializeField] private float stopThreshold = 0.1f;
 
-    [Header("8-directional Sprite")]
-    public SpriteRenderer spriteRenderer;
-
-    public Sprite spriteUp;
-    public Sprite spriteDown;
-    public Sprite spriteLeft;
-    public Sprite spriteRigth;
-    public Sprite spriteUpLeft;
-    public Sprite spriteUpRigth;
-    public Sprite spriteDownLeft;
-    public Sprite spriteDownRigth;
-
-    [Header("Directional Movement")]
+    [Header("Player animator")]
     public Animator playerSpriteAnimator;
 
     private float lastX = 0f;
@@ -37,50 +30,47 @@ public class IsometricPlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        controls = new PlayerControls();
     }
 
-    private void OnEnable()
+    private void Update()
     {
-        controls.Player.Move.performed += ctx => inputVector = ctx.ReadValue<Vector2>();
-        controls.Player.Move.canceled += ctx => inputVector = Vector2.zero;
-        controls.Enable();
-    }
+        float x = 0f, y = 0f;
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))  x -= 1f;
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) x += 1f;
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))  y -= 1f;
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))    y += 1f;
 
-    private void OnDisable()
-    {
-        controls.Disable();
+        inputVector = new Vector2(x, y).normalized;
     }
 
     private void FixedUpdate()
     {
-        if (!isoMovement)
-        {
-            Vector2 moveDir = inputVector.normalized;
-            rb.MovePosition(rb.position + moveDir * moveSpeed * Time.fixedDeltaTime);
-        }
-        else
-        {
-            Vector2 isoDirection = (isoRight * inputVector.x + isoUp * inputVector.y).normalized;
-            rb.MovePosition(rb.position + isoDirection * moveSpeed * Time.fixedDeltaTime);
-        }
+        Vector2 targetVelocity = inputVector * moveSpeed;
+        float rate = inputVector.sqrMagnitude > 0f ? acceleration : deceleration;
 
-        UpdateSpriteDirection(inputVector);
+        currentVelocity = Vector2.MoveTowards(currentVelocity, targetVelocity, rate * Time.fixedDeltaTime);
+
+        if (currentVelocity.sqrMagnitude < stopThreshold * stopThreshold)
+            currentVelocity = Vector2.zero;
+
+        rb.MovePosition(rb.position + currentVelocity * Time.fixedDeltaTime);
+
+        UpdateSpriteDirection(currentVelocity);
     }
 
     private void UpdateSpriteDirection(Vector2 direction)
     {
-        direction.Normalize();
+        bool isMoving = direction.sqrMagnitude > 0.01f;
 
-        if (direction.sqrMagnitude > 0.01f)
+        if (isMoving)
         {
-            lastX = (direction.x > 0 ? (direction.x > 0.5f ? 1 : 0) : (direction.x < -0.5f ? -1 : 0));
-            lastY = (direction.y > 0 ? (direction.y > 0.5f ? 1 : 0) : (direction.y < -0.5f ? -1 : 0));
+            Vector2 dir = direction.normalized;
+            lastX = dir.x > 0.5f ? 1 : dir.x < -0.5f ? -1 : 0;
+            lastY = dir.y > 0.5f ? 1 : dir.y < -0.5f ? -1 : 0;
         }
 
-        playerSpriteAnimator.SetFloat("X", lastX);
-        playerSpriteAnimator.SetFloat("Y", lastY);
-
-        playerSpriteAnimator.SetBool("IsMoving", direction.sqrMagnitude > 0.01f);
+        playerSpriteAnimator.SetFloat(XHash, lastX);
+        playerSpriteAnimator.SetFloat(YHash, lastY);
+        playerSpriteAnimator.SetBool(IsMovingHash, isMoving);
     }
 }

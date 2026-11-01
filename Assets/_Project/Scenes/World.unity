@@ -166,18 +166,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IsometricPlayerController
   moveSpeed: 5
-  isoMovement: 0
-  isoRight: {x: 1, y: 0.5}
-  isoUp: {x: -1, y: 0.5}
-  spriteRenderer: {fileID: 1400611718}
-  spriteUp: {fileID: -380362419353694245, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
-  spriteDown: {fileID: 5497369311495656864, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
-  spriteLeft: {fileID: 1903504555360657301, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
-  spriteRigth: {fileID: 5073013363320654238, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
-  spriteUpLeft: {fileID: 6400548867142685080, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
-  spriteUpRigth: {fileID: -4871531732248455920, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
-  spriteDownLeft: {fileID: 5012592327895361995, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
-  spriteDownRigth: {fileID: -6821322843767666820, guid: 085413e05bc018e45bc64a36b9ebb770, type: 3}
+  acceleration: 50
+  deceleration: 30
+  stopThreshold: 0.1
   playerSpriteAnimator: {fileID: 1400611721}
 --- !u!50 &71051663
 Rigidbody2D:
@@ -202,7 +193,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
@@ -1230,7 +1221,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraControls
   target: {fileID: 1400611717}
-  smoothSpeed: 0.125
+  smoothSpeed: 0.05
   offset: {x: 0, y: 0, z: -10}
 --- !u!114 &1883170510
 MonoBehaviour:
