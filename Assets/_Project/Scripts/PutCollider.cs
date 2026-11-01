@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.InputSystem;
 
 public class PutCollider : MonoBehaviour
 {
@@ -10,19 +9,17 @@ public class PutCollider : MonoBehaviour
     public int offsetX = 5;
     public int offsetY = -8;
     public int offsetZ = 0;
-    private InputAction placeAction;
-
 
     private void Awake()
     {
         PlaceTile(new Vector3Int(0, 0, 1));
-        placeAction = new InputAction("PlaceTile", InputActionType.Button);
-        placeAction.AddBinding("<Keyboard>/z");
-        placeAction.performed += ctx => PlayerPlace();
     }
 
-    private void OnEnable() => placeAction.Enable();
-    private void OnDisable() => placeAction.Disable();
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+            PlayerPlace();
+    }
 
     public void PlaceTile(Vector3Int cell)
     {

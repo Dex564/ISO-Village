@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlacementSystem : MonoBehaviour
 {
@@ -14,37 +13,11 @@ public class PlacementSystem : MonoBehaviour
 
     [Header("Visual Settings")]
     [SerializeField] private Vector3 visualOffset = Vector3.zero;
+
     private bool isPlacing;
     private PolygonCollider2D placementCollider;
+    private ContactFilter2D filter;
     private readonly List<Collider2D> overlaps = new List<Collider2D>();
-    [SerializeField] private InputActionReference placeAction;
-
-    private void OnEnable()
-    {
-        if (placeAction != null && placeAction.action != null)
-        {
-            placeAction.action.performed += OnPlacePerformed;
-            placeAction.action.Enable();
-        }
-        else
-        {
-            Debug.LogError("[TilePlacer] Input Action Reference не назначен!");
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (placeAction != null && placeAction.action != null)
-        {
-            placeAction.action.performed -= OnPlacePerformed;
-            placeAction.action.Disable();
-        }
-    }
-
-    private void OnPlacePerformed(InputAction.CallbackContext context)
-    {
-        StartPlacing();
-    }
 
     private void Awake()
     {
@@ -55,12 +28,10 @@ public class PlacementSystem : MonoBehaviour
             return;
 
         PolygonCollider2D source = buildingPrefab.GetComponent<PolygonCollider2D>();
-
         if (source == null)
             return;
 
         placementCollider = ghostObject.GetComponent<PolygonCollider2D>();
-
         if (placementCollider == null)
             placementCollider = ghostObject.AddComponent<PolygonCollider2D>();
 
@@ -71,13 +42,15 @@ public class PlacementSystem : MonoBehaviour
 
         for (int i = 0; i < source.pathCount; i++)
             placementCollider.SetPath(i, source.GetPath(i));
+
+        filter = new ContactFilter2D { useTriggers = true };
+        filter.SetLayerMask(blockingLayers);
     }
 
-    public Vector3Int GetMouseCellPosition()
+    private Vector3Int GetMouseCellPosition()
     {
         Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         mouseWorldPos.z = 0f;
-
         return grid.WorldToCell(mouseWorldPos);
     }
 
@@ -85,7 +58,6 @@ public class PlacementSystem : MonoBehaviour
     {
         Vector3 position = grid.GetCellCenterWorld(cellPos);
         position.z = 0f;
-
         return position + visualOffset;
     }
 
@@ -96,23 +68,18 @@ public class PlacementSystem : MonoBehaviour
 
         foreach (Transform child in grid.transform)
         {
-            PolygonCollider2D houseCollider = child.GetComponent<PolygonCollider2D>();
-
-            if (houseCollider == null || child == ghostObject.transform)
+            if (child == ghostObject.transform)
                 continue;
 
             if ((blockingLayers.value & (1 << child.gameObject.layer)) == 0)
                 continue;
 
-            float distance = Vector2.Distance(position, child.position);
-
-            if (distance < minimumBuildingDistance)
+            if (Vector2.Distance(position, child.position) < minimumBuildingDistance)
                 return false;
-        }
 
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.SetLayerMask(blockingLayers);
-        filter.useTriggers = true;
+            if (!child.TryGetComponent<PolygonCollider2D>(out _))
+                continue;
+        }
 
         overlaps.Clear();
         placementCollider.Overlap(filter, overlaps);
@@ -121,7 +88,6 @@ public class PlacementSystem : MonoBehaviour
         {
             if (overlap.transform == ghostObject.transform || overlap.transform.IsChildOf(ghostObject.transform))
                 continue;
-
             return false;
         }
 
@@ -143,7 +109,6 @@ public class PlacementSystem : MonoBehaviour
         }
 
         ghostObject.transform.position = GetPlacementPosition(GetMouseCellPosition());
-
         isPlacing = true;
         ghostObject.SetActive(true);
     }
@@ -151,7 +116,6 @@ public class PlacementSystem : MonoBehaviour
     public void StopPlacing()
     {
         isPlacing = false;
-
         if (ghostObject != null)
             ghostObject.SetActive(false);
     }
@@ -159,20 +123,14 @@ public class PlacementSystem : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.B))
-            StartPlacing();
-
-        if (!isPlacing)
-            return;
-
-        if (Input.GetMouseButtonDown(1))
         {
-            StopPlacing();
-            return;
+            if (!isPlacing) StartPlacing();
+            else StopPlacing();
         }
 
-        Vector3Int cellPos = GetMouseCellPosition();
-        Vector3 placementPosition = GetPlacementPosition(cellPos);
+        if (!isPlacing) return;
 
+        Vector3 placementPosition = GetPlacementPosition(GetMouseCellPosition());
         ghostObject.transform.position = placementPosition;
 
         if (Input.GetMouseButtonDown(0))
