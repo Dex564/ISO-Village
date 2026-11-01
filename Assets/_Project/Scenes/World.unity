@@ -130,7 +130,6 @@ GameObject:
   - component: {fileID: 71051661}
   - component: {fileID: 71051663}
   - component: {fileID: 71051662}
-  - component: {fileID: 71051664}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -166,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dec2a6cd51e87b74fb00fd14705a6b68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IsometricPlayerController
-  moveSpeed: 5
+  moveSpeed: 1
   acceleration: 50
   deceleration: 30
   stopThreshold: 0.1
@@ -198,20 +197,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!114 &71051664
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 71051660}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0dca349ac86fe5a43a6dad7324ddedf1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GetCord
-  player: {fileID: 0}
-  grid: {fileID: 436989725}
 --- !u!1 &78936041
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,7 +348,6 @@ MonoBehaviour:
     m_Bits: 8
   minimumBuildingDistance: 2
   visualOffset: {x: 0, y: 0, z: 0}
-  placeAction: {fileID: 6219367712574626590, guid: f9687a65d90178942b2dc93daf7894bc, type: 3}
 --- !u!1 &994028697
 GameObject:
   m_ObjectHideFlags: 0
