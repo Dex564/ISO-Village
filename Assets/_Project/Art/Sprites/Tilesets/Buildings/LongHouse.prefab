@@ -171,11 +171,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0, y: 1}
-      - {x: -0.4934771, y: 0.75572526}
-      - {x: -0.9993274, y: 0.5004355}
-      - {x: -0.006144792, y: -0.0046390295}
-      - {x: 1.0088158, y: 0.4992407}
+    - - {x: 0.94227564, y: 0.08139953}
+      - {x: 0.01539135, y: 0.519518}
+      - {x: -0.9500438, y: 0.025193123}
+      - {x: -0.04982519, y: -0.42025912}
   m_UseDelaunayMesh: 1
 --- !u!114 &9151542529734624717
 MonoBehaviour:
@@ -190,5 +189,5 @@ MonoBehaviour:
   m_Name: Palette Settings
   m_EditorClassIdentifier: UnityEditor.dll::UnityEditor.GridPalette
   cellSizing: 100
-  m_TransparencySortMode: 0
-  m_TransparencySortAxis: {x: 0, y: 0, z: 1}
+  m_TransparencySortMode: 3
+  m_TransparencySortAxis: {x: 0, y: 1, z: 0}
