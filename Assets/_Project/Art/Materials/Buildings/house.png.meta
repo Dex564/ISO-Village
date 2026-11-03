@@ -119,11 +119,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 2
-        width: 128
-        height: 119
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        y: 0
+        width: 70
+        height: 124
+      alignment: 9
+      pivot: {x: 1, y: 0.34315667}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -132,6 +132,28 @@ TextureImporter:
       bones: []
       spriteID: 829891cad799c45e0800000000000000
       internalID: -1923994175756728024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: house_1
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 0
+        width: 58
+        height: 124
+      alignment: 9
+      pivot: {x: 0, y: 0.3186494}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4399851d802a21943b402ae97ba4108a
+      internalID: 1097203444
       vertices: []
       indices: 
       edges: []
@@ -153,6 +175,7 @@ TextureImporter:
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":128.0,"y":158.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       house_0: -1923994175756728024
+      house_1: 1097203444
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
