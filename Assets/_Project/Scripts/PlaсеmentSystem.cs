@@ -1,69 +1,175 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Строительство: призрак здания следует за мышью, проверка и занятие клеток идёт через WorldMap.
+/// Никаких коллайдеров и расстояний: можно ли строить, решают данные клеток.
+/// </summary>
 public class PlacementSystem : MonoBehaviour
 {
     [Header("Buildings")]
     [SerializeField] private BuildingData[] availableBuildings;
     [SerializeField] private int startIndex = 0;
 
-    [Header("Placement Settings")]
-    [SerializeField] private Grid grid;
+    [Header("References")]
     [SerializeField] private Camera mainCamera;
-    [SerializeField] private LayerMask blockingLayers;
-    [SerializeField, Min(0f)] private float minimumBuildingDistance = 2f;
+    [SerializeField] private Transform buildingsParent;   // пустой объект "Buildings" для порядка в иерархии
+
+    [Header("Ghost")]
+    [SerializeField, Range(0f, 1f)] private float ghostAlpha = 0.6f;
+    [SerializeField] private Color validTint = Color.white;
+    [SerializeField] private Color invalidTint = new Color(1f, 0.3f, 0.3f, 1f);
 
     [Header("Input")]
+    [SerializeField] private KeyCode togglePlacementKey = KeyCode.B;
+    [SerializeField] private KeyCode cancelKey = KeyCode.Escape;
     [SerializeField] private KeyCode cycleNextKey = KeyCode.E;
     [SerializeField] private KeyCode cyclePrevKey = KeyCode.Q;
-    [SerializeField] private KeyCode togglePlacementKey = KeyCode.B;
-    [SerializeField] private KeyCode rotateKey = KeyCode.R;
+    [SerializeField] private KeyCode flipKey = KeyCode.R;
 
     // runtime
     private bool isPlacing;
+    private bool flipped;
     private int currentIndex;
-    private BuildingData CurrentBuilding =>
-        (availableBuildings != null && availableBuildings.Length > 0)
-            ? availableBuildings[Mathf.Clamp(currentIndex, 0, availableBuildings.Length - 1)]
-            : null;
 
-    private GameObject ghostInstance;
-    private PolygonCollider2D placementCollider;
-    private ContactFilter2D filter;
-    private readonly List<Collider2D> overlaps = new List<Collider2D>();
-
-    private Quaternion currentRotation = Quaternion.identity;
-
+    private GameObject ghost;
     private readonly List<SpriteRenderer> ghostRenderers = new List<SpriteRenderer>();
     private readonly List<Color> ghostBaseColors = new List<Color>();
-    private bool? lastValidState;
+    private bool? lastValid;
+
+    private BuildingData CurrentBuilding => availableBuildings[currentIndex];
+
+    // ---------- Unity ----------
 
     private void Awake()
     {
+        if (mainCamera == null) mainCamera = Camera.main;
+
         if (availableBuildings == null || availableBuildings.Length == 0)
         {
             Debug.LogWarning("PlacementSystem: не задан список зданий.");
+            enabled = false;
             return;
         }
 
         currentIndex = Mathf.Clamp(startIndex, 0, availableBuildings.Length - 1);
-
-        filter = new ContactFilter2D { useTriggers = true };
-        filter.SetLayerMask(blockingLayers);
-
-        RebuildGhost();
     }
 
-    // ---------- Ghost management ----------
-
-    private void RebuildGhost()
+    private void Update()
     {
-        if (ghostInstance != null)
+        if (Input.GetKeyDown(cycleNextKey)) CycleBuilding(+1);
+        if (Input.GetKeyDown(cyclePrevKey)) CycleBuilding(-1);
+
+        if (Input.GetKeyDown(togglePlacementKey))
         {
-            Destroy(ghostInstance);
-            ghostInstance = null;
+            if (isPlacing) StopPlacing();
+            else StartPlacing();
         }
-        placementCollider = null;
+
+        if (!isPlacing) return;
+
+        if (Input.GetKeyDown(cancelKey))
+        {
+            StopPlacing();
+            return;
+        }
+
+        if (Input.GetKeyDown(flipKey))
+        {
+            flipped = !flipped;
+            ApplyFlip(ghost);
+        }
+
+        WorldMap map = WorldMap.Instance;
+        if (ghost == null || map == null) return;
+
+        Vector2Int footprint = GetFootprint();
+        Vector2Int origin = GetOrigin(map, footprint);
+
+        ghost.transform.position = GetCenter(map, origin, footprint);
+
+        bool canPlace = map.CanPlace(origin, footprint);
+        SetGhostValid(canPlace);
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (canPlace) PlaceBuilding(map, origin, footprint);
+            else Debug.Log("Здесь нельзя строить.");
+        }
+    }
+
+    // ---------- Режим строительства ----------
+
+    public void StartPlacing()
+    {
+        if (isPlacing) return;
+        isPlacing = true;
+        flipped = false;
+        BuildGhost();
+    }
+
+    public void StopPlacing()
+    {
+        isPlacing = false;
+        DestroyGhost();
+    }
+
+    private void CycleBuilding(int delta)
+    {
+        currentIndex = (currentIndex + delta) % availableBuildings.Length;
+        if (currentIndex < 0) currentIndex += availableBuildings.Length;
+
+        if (isPlacing) BuildGhost();
+    }
+
+    // ---------- Клетки и позиции ----------
+
+    // Размер основания с учётом отражения: в изометрии зеркало меняет оси клеток местами.
+    private Vector2Int GetFootprint()
+    {
+        Vector2Int fp = CurrentBuilding.footprint;
+        fp.x = Mathf.Max(1, fp.x);
+        fp.y = Mathf.Max(1, fp.y);
+        return flipped ? new Vector2Int(fp.y, fp.x) : fp;
+    }
+
+    // Клетка под мышью считается центром основания (для 2x2 это его нижний угол).
+    private Vector2Int GetOrigin(WorldMap map, Vector2Int footprint)
+    {
+        Vector3 mouseWorld = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        Vector2Int mouseCell = map.WorldToCell(mouseWorld);
+        return mouseCell - new Vector2Int((footprint.x - 1) / 2, (footprint.y - 1) / 2);
+    }
+
+    // Середина между крайними клетками основания.
+    private static Vector3 GetCenter(WorldMap map, Vector2Int origin, Vector2Int footprint)
+    {
+        Vector3 a = map.CellToWorld(origin);
+        Vector3 b = map.CellToWorld(origin + footprint - Vector2Int.one);
+        return (a + b) * 0.5f;
+    }
+
+    // ---------- Постройка ----------
+
+    private void PlaceBuilding(WorldMap map, Vector2Int origin, Vector2Int footprint)
+    {
+        BuildingData data = CurrentBuilding;
+        Vector3 center = GetCenter(map, origin, footprint);
+
+        GameObject building = Instantiate(data.buildingPrefab, center, Quaternion.identity, buildingsParent);
+        building.name = data.buildingName;
+        ApplyFlip(building);
+
+        map.Occupy(origin, footprint, building);
+
+        // Здесь позже: проверка и списание data.cost через ResourceStock.
+    }
+
+    // ---------- Призрак ----------
+
+    private void BuildGhost()
+    {
+        DestroyGhost();
 
         BuildingData data = CurrentBuilding;
         if (data == null || data.buildingPrefab == null)
@@ -72,237 +178,66 @@ public class PlacementSystem : MonoBehaviour
             return;
         }
 
-        GameObject temp = Instantiate(data.buildingPrefab);
-        temp.name = $"{data.buildingName}_Ghost";
-        temp.SetActive(false);
+        ghost = Instantiate(data.buildingPrefab);
+        ghost.name = data.buildingName + "_Ghost";
 
-        StripForGhost(temp);
-
-        ApplyGhostVisuals(temp);
+        // Призраку нужна только картинка.
+        foreach (var mb in ghost.GetComponentsInChildren<MonoBehaviour>(true)) Destroy(mb);
+        foreach (var rb in ghost.GetComponentsInChildren<Rigidbody2D>(true)) Destroy(rb);
+        foreach (var col in ghost.GetComponentsInChildren<Collider2D>(true)) Destroy(col);
 
         ghostRenderers.Clear();
         ghostBaseColors.Clear();
-        foreach (var sr in temp.GetComponentsInChildren<SpriteRenderer>(true))
-        {
-            ghostRenderers.Add(sr);
-            ghostBaseColors.Add(sr.color);
-        }
-        lastValidState = null;
-
-        ghostInstance = temp;
-        ghostInstance.transform.SetParent(grid.transform, worldPositionStays: false);
-        ghostInstance.transform.localPosition = Vector3.zero;
-        ghostInstance.transform.localRotation = Quaternion.identity;
-        ghostInstance.transform.localScale = Vector3.one;
-
-        placementCollider = ghostInstance.GetComponent<PolygonCollider2D>();
-        if (placementCollider == null)
-            placementCollider = ghostInstance.AddComponent<PolygonCollider2D>();
-
-        PolygonCollider2D source = data.buildingPrefab.GetComponent<PolygonCollider2D>();
-        if (source != null)
-        {
-            placementCollider.pathCount = source.pathCount;
-            placementCollider.offset = source.offset;
-            for (int i = 0; i < source.pathCount; i++)
-                placementCollider.SetPath(i, source.GetPath(i));
-        }
-
-        placementCollider.isTrigger = true;
-        placementCollider.enabled = true;
-
-        ghostInstance.transform.rotation = currentRotation;
-    }
-
-    private static void StripForGhost(GameObject root)
-    {
-        foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
-        {
-            if (mb != null) Destroy(mb);
-        }
-        foreach (var rb in root.GetComponentsInChildren<Rigidbody2D>(true))
-            Destroy(rb);
-        foreach (var col in root.GetComponentsInChildren<Collider2D>(true))
-        {
-            if (col is PolygonCollider2D) continue;
-            Destroy(col);
-        }
-    }
-
-    private static void ApplyGhostVisuals(GameObject root)
-    {
-        foreach (var sr in root.GetComponentsInChildren<SpriteRenderer>(true))
+        foreach (var sr in ghost.GetComponentsInChildren<SpriteRenderer>(true))
         {
             Color c = sr.color;
-            c.a = 0.6f;
+            c.a = ghostAlpha;
             sr.color = c;
+
+            ghostRenderers.Add(sr);
+            ghostBaseColors.Add(c);
         }
+
+        lastValid = null;
+        ApplyFlip(ghost);
+    }
+
+    private void DestroyGhost()
+    {
+        if (ghost != null) Destroy(ghost);
+        ghost = null;
+        ghostRenderers.Clear();
+        ghostBaseColors.Clear();
+        lastValid = null;
+    }
+
+    // Отражение делаем через масштаб по X (нужен pivot в центре основания).
+    private void ApplyFlip(GameObject go)
+    {
+        if (go == null) return;
+
+        Vector3 scale = CurrentBuilding.buildingPrefab.transform.localScale;
+        scale.x = Mathf.Abs(scale.x) * (flipped ? -1f : 1f);
+        go.transform.localScale = scale;
     }
 
     private void SetGhostValid(bool valid)
     {
-        if (lastValidState == valid) return;
-        lastValidState = valid;
+        if (lastValid == valid) return;
+        lastValid = valid;
 
-        Color tint = valid
-            ? Color.white
-            : new Color(1f, 0.3f, 0.3f, 1f);
+        Color tint = valid ? validTint : invalidTint;
 
         for (int i = 0; i < ghostRenderers.Count; i++)
         {
-            var sr = ghostRenderers[i];
-            if (sr == null) continue;
+            if (ghostRenderers[i] == null) continue;
 
             Color baseColor = ghostBaseColors[i];
-            sr.color = new Color(
+            ghostRenderers[i].color = new Color(
                 baseColor.r * tint.r,
                 baseColor.g * tint.g,
                 baseColor.b * tint.b,
-                baseColor.a
-            );
-        }
-    }
-
-    private void CycleBuilding(int delta)
-    {
-        if (availableBuildings == null || availableBuildings.Length == 0) return;
-
-        currentIndex = (currentIndex + delta) % availableBuildings.Length;
-        if (currentIndex < 0) currentIndex += availableBuildings.Length;
-
-        RebuildGhost();
-
-        if (isPlacing)
-        {
-            ghostInstance.SetActive(true);
-            ghostInstance.transform.position = GetPlacementPosition(GetMouseCellPosition());
-            ghostInstance.transform.rotation = currentRotation;
-        }
-    }
-
-    // ---------- Helpers ----------
-
-    private Vector3Int GetMouseCellPosition()
-    {
-        Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldPos.z = 0f;
-        return grid.WorldToCell(mouseWorldPos);
-    }
-
-    private Vector3 GetPlacementPosition(Vector3Int cellPos)
-    {
-        Vector3 position = grid.GetCellCenterWorld(cellPos);
-        position.z = 0f;
-        return position;
-    }
-
-    private bool CanPlace(Vector3 position, Quaternion rotation)
-    {
-        if (ghostInstance == null || placementCollider == null) return false;
-
-        ghostInstance.transform.position = position;
-        ghostInstance.transform.rotation = rotation;
-        Physics2D.SyncTransforms();
-
-        foreach (Transform child in grid.transform)
-        {
-            if (child == ghostInstance.transform || child.IsChildOf(ghostInstance.transform))
-                continue;
-            if (child.name.EndsWith("_Ghost")) continue;
-
-            if ((blockingLayers.value & (1 << child.gameObject.layer)) == 0)
-                continue;
-
-            Vector2 a = position;
-            Vector2 b = child.position;
-            if (Vector2.Distance(a, b) < minimumBuildingDistance)
-                return false;
-        }
-
-        overlaps.Clear();
-        placementCollider.Overlap(filter, overlaps);
-
-        foreach (Collider2D overlap in overlaps)
-        {
-            if (overlap == null) continue;
-            if (overlap.transform == ghostInstance.transform) continue;
-            if (overlap.transform.IsChildOf(ghostInstance.transform)) continue;
-            if (overlap.transform.name.EndsWith("_Ghost")) continue;
-
-            return false;
-        }
-
-        return true;
-    }
-
-    // ---------- Public API ----------
-
-    public void StartPlacing()
-    {
-        if (grid == null || mainCamera == null || CurrentBuilding == null)
-        {
-            Debug.LogWarning("PlacementSystem: проверь ссылки в Inspector.");
-            return;
-        }
-
-        if (ghostInstance == null || placementCollider == null)
-        {
-            RebuildGhost();
-            if (ghostInstance == null || placementCollider == null) return;
-        }
-
-        currentRotation = Quaternion.identity;
-        ghostInstance.transform.rotation = currentRotation;
-        ghostInstance.transform.position = GetPlacementPosition(GetMouseCellPosition());
-        isPlacing = true;
-        ghostInstance.SetActive(true);
-    }
-
-    public void StopPlacing()
-    {
-        isPlacing = false;
-        if (ghostInstance != null)
-            ghostInstance.SetActive(false);
-    }
-
-    // ---------- Update ----------
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(togglePlacementKey))
-        {
-            if (!isPlacing) StartPlacing();
-            else StopPlacing();
-        }
-
-        if (Input.GetKeyDown(cycleNextKey)) CycleBuilding(+1);
-        if (Input.GetKeyDown(cyclePrevKey)) CycleBuilding(-1);
-
-        if (!isPlacing || ghostInstance == null) return;
-
-        if (Input.GetKeyDown(rotateKey))
-        {
-            currentRotation = Quaternion.Euler(0f, 180f, 0f) * currentRotation;
-            ghostInstance.transform.rotation = currentRotation;
-            Physics2D.SyncTransforms();
-        }
-
-        Vector3 placementPosition = GetPlacementPosition(GetMouseCellPosition());
-        ghostInstance.transform.position = placementPosition;
-
-        bool canPlaceHere = CanPlace(placementPosition, currentRotation);
-        SetGhostValid(canPlaceHere);
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (!canPlaceHere)
-            {
-                Debug.Log("Здесь нельзя строить: место занято.");
-                return;
-            }
-
-            Instantiate(CurrentBuilding.buildingPrefab, placementPosition, currentRotation, grid.transform);
-            Physics2D.SyncTransforms();
+                baseColor.a);
         }
     }
 }

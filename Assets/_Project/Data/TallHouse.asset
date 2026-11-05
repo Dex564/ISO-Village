@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingName: LongHouse
   buildingPrefab: {fileID: 4009902542816301566, guid: 845286c290e5dad4ca63c6a054f2d315, type: 3}
+  footprint: {x: 2, y: 2}
   cost: 20

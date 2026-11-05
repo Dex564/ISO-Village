@@ -9,6 +9,9 @@ public class BuildingData : ScriptableObject
     [Header("Prefabs")]
     public GameObject buildingPrefab;
 
+    [Header("Size")]
+    public Vector2Int footprint;
+
     [Header("Gameplay")]
     [Min(0)] public int cost = 0;
 }
