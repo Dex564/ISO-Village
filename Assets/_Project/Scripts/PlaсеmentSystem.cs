@@ -13,7 +13,8 @@ public class PlacementSystem : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
-    [SerializeField] private Transform buildingsParent;   // пустой объект "Buildings" для порядка в иерархии
+    [SerializeField] private Transform buildingsParent;
+    [SerializeField] private BuildingManager buildingManager;
 
     [Header("Ghost")]
     [SerializeField, Range(0f, 1f)] private float ghostAlpha = 0.6f;
@@ -161,6 +162,8 @@ public class PlacementSystem : MonoBehaviour
         ApplyFlip(building);
 
         map.Occupy(origin, footprint, building);
+
+        buildingManager.RegisterPlaced(data, origin, footprint, flipped);
 
         // Здесь позже: проверка и списание data.cost через ResourceStock.
     }

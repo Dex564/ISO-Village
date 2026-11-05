@@ -3,44 +3,48 @@ using UnityEngine.Tilemaps;
 
 public class WorldGenerator : MonoBehaviour
 {
-    [Header("Ссылки")]
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅ")]
     [SerializeField] private WorldMap map;
     [SerializeField] private Tilemap groundTilemap;
     [SerializeField] private Transform resourcesParent;
 
-    [Header("Земля")]
+    [Header("пїЅпїЅпїЅпїЅпїЅ")]
     [SerializeField] private TileBase[] grassTiles = new TileBase[2];
     [SerializeField, Range(0.05f, 0.3f)] private float grassNoiseScale = 0.12f;
     [SerializeField, Range(0f, 1f)] private float grassVariantThreshold = 0.55f;
 
-    [Header("Камни")]
+    [Header("пїЅпїЅпїЅпїЅпїЅ")]
     [SerializeField] private GameObject stonePrefab;
     [SerializeField, Range(0.05f, 0.3f)] private float stoneNoiseScale = 0.1f;
     [SerializeField, Range(0f, 1f)] private float stoneNoiseThreshold = 0.6f;
     [SerializeField, Range(0f, 1f)] private float stoneChance = 0.35f;
 
-    [Header("Карта")]
+    [Header("пїЅпїЅпїЅпїЅпїЅ")]
     [SerializeField] private int size = 64;
     [SerializeField] private bool useRandomSeed = true;
-    [SerializeField] private int seed = 12345;
 
-    [Header("Стартовая зона")]
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ")]
     [SerializeField] private int startRadius = 20;
     [SerializeField] private int guaranteedStonesRadius = 30;
     [SerializeField] private int guaranteedStonesCount = 4;
+
+    private int seed = WorldManager.Seed;
 
     private void Start()
     {
         Generate();
     }
 
-    // Можно вызвать в режиме Play: ПКМ по заголовку компонента -> Generate.
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ Play: пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ -> Generate.
     [ContextMenu("Generate")]
     public void Generate()
     {
         if (!ValidateReferences()) return;
 
-        if (useRandomSeed) seed = Random.Range(0, 1000000);
+        if (useRandomSeed) {
+            seed = Random.Range(0, 1000000);
+            WorldManager.Seed = seed;
+        }
         Debug.Log($"WorldGenerator: seed = {seed}");
 
         Clear();
@@ -121,7 +125,7 @@ public class WorldGenerator : MonoBehaviour
         }
 
         if (count < guaranteedStonesCount)
-            Debug.LogWarning("WorldGenerator: не удалось разместить нужное число камней у старта.");
+            Debug.LogWarning("WorldGenerator: пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.");
     }
 
 
@@ -165,7 +169,7 @@ public class WorldGenerator : MonoBehaviour
         return count;
     }
 
-    // Расстояние от центра карты (0,0) в клетках. На экране это ромб.
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (0,0) пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
     private static int DistanceFromCenter(Vector2Int pos)
     {
         return Mathf.Max(Mathf.Abs(pos.x), Mathf.Abs(pos.y));
@@ -188,12 +192,12 @@ public class WorldGenerator : MonoBehaviour
     {
         if (map == null || groundTilemap == null || resourcesParent == null || stonePrefab == null)
         {
-            Debug.LogError("WorldGenerator: не назначены ссылки в инспекторе (map, groundTilemap, resourcesParent, stonePrefab).");
+            Debug.LogError("WorldGenerator: пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (map, groundTilemap, resourcesParent, stonePrefab).");
             return false;
         }
         if (grassTiles == null || grassTiles.Length < 2 || grassTiles[0] == null || grassTiles[1] == null)
         {
-            Debug.LogError("WorldGenerator: нужны два тайла травы в массиве grassTiles.");
+            Debug.LogError("WorldGenerator: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ grassTiles.");
             return false;
         }
         return true;
