@@ -27,7 +27,6 @@ public class WorldMap : MonoBehaviour
         Instance = this;
     }
 
-    // ---------- Создание ----------
 
     public void Init(int size)
     {
@@ -42,7 +41,6 @@ public class WorldMap : MonoBehaviour
         cells[i.x, i.y] = cell;
     }
 
-    // ---------- Доступ к клеткам ----------
 
     public bool InBounds(Vector2Int pos)
     {
@@ -68,7 +66,6 @@ public class WorldMap : MonoBehaviour
                 yield return cells[x, y];
     }
 
-    // ---------- Координаты ----------
 
     public Vector2Int WorldToCell(Vector3 world)
     {
@@ -77,7 +74,6 @@ public class WorldMap : MonoBehaviour
         return new Vector2Int(c.x, c.y);
     }
 
-    /// Центр ромба клетки в мировых координатах.
     public Vector3 CellToWorld(Vector2Int pos)
     {
         Vector3 w = grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
@@ -85,9 +81,7 @@ public class WorldMap : MonoBehaviour
         return w;
     }
 
-    // ---------- Строительство ----------
     // origin: клетка с наименьшими x и y; footprint: размер основания в клетках, например (2, 2).
-
     public bool CanPlace(Vector2Int origin, Vector2Int footprint)
     {
         for (int x = 0; x < footprint.x; x++)

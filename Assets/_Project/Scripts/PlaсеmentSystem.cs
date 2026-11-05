@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Строительство: призрак здания следует за мышью, проверка и занятие клеток идёт через WorldMap.
-/// Никаких коллайдеров и расстояний: можно ли строить, решают данные клеток.
-/// </summary>
 public class PlacementSystem : MonoBehaviour
 {
     [Header("Buildings")]
@@ -13,7 +9,7 @@ public class PlacementSystem : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
-    [SerializeField] private Transform buildingsParent;   // пустой объект "Buildings" для порядка в иерархии
+    [SerializeField] private Transform buildingsParent;
 
     [Header("Ghost")]
     [SerializeField, Range(0f, 1f)] private float ghostAlpha = 0.6f;
@@ -27,7 +23,6 @@ public class PlacementSystem : MonoBehaviour
     [SerializeField] private KeyCode cyclePrevKey = KeyCode.Q;
     [SerializeField] private KeyCode flipKey = KeyCode.R;
 
-    // runtime
     private bool isPlacing;
     private bool flipped;
     private int currentIndex;
@@ -39,7 +34,6 @@ public class PlacementSystem : MonoBehaviour
 
     private BuildingData CurrentBuilding => availableBuildings[currentIndex];
 
-    // ---------- Unity ----------
 
     private void Awake()
     {
@@ -98,7 +92,6 @@ public class PlacementSystem : MonoBehaviour
         }
     }
 
-    // ---------- Режим строительства ----------
 
     public void StartPlacing()
     {
@@ -122,9 +115,6 @@ public class PlacementSystem : MonoBehaviour
         if (isPlacing) BuildGhost();
     }
 
-    // ---------- Клетки и позиции ----------
-
-    // Размер основания с учётом отражения: в изометрии зеркало меняет оси клеток местами.
     private Vector2Int GetFootprint()
     {
         Vector2Int fp = CurrentBuilding.footprint;
@@ -133,7 +123,6 @@ public class PlacementSystem : MonoBehaviour
         return flipped ? new Vector2Int(fp.y, fp.x) : fp;
     }
 
-    // Клетка под мышью считается центром основания (для 2x2 это его нижний угол).
     private Vector2Int GetOrigin(WorldMap map, Vector2Int footprint)
     {
         Vector3 mouseWorld = mainCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -141,15 +130,12 @@ public class PlacementSystem : MonoBehaviour
         return mouseCell - new Vector2Int((footprint.x - 1) / 2, (footprint.y - 1) / 2);
     }
 
-    // Середина между крайними клетками основания.
     private static Vector3 GetCenter(WorldMap map, Vector2Int origin, Vector2Int footprint)
     {
         Vector3 a = map.CellToWorld(origin);
         Vector3 b = map.CellToWorld(origin + footprint - Vector2Int.one);
         return (a + b) * 0.5f;
     }
-
-    // ---------- Постройка ----------
 
     private void PlaceBuilding(WorldMap map, Vector2Int origin, Vector2Int footprint)
     {
@@ -161,11 +147,8 @@ public class PlacementSystem : MonoBehaviour
         ApplyFlip(building);
 
         map.Occupy(origin, footprint, building);
-
-        // Здесь позже: проверка и списание data.cost через ResourceStock.
     }
 
-    // ---------- Призрак ----------
 
     private void BuildGhost()
     {
@@ -178,10 +161,9 @@ public class PlacementSystem : MonoBehaviour
             return;
         }
 
-        ghost = Instantiate(data.buildingPrefab);
+        ghost = Instantiate(data.buildingPrefab, buildingsParent);
         ghost.name = data.buildingName + "_Ghost";
 
-        // Призраку нужна только картинка.
         foreach (var mb in ghost.GetComponentsInChildren<MonoBehaviour>(true)) Destroy(mb);
         foreach (var rb in ghost.GetComponentsInChildren<Rigidbody2D>(true)) Destroy(rb);
         foreach (var col in ghost.GetComponentsInChildren<Collider2D>(true)) Destroy(col);
@@ -211,7 +193,6 @@ public class PlacementSystem : MonoBehaviour
         lastValid = null;
     }
 
-    // Отражение делаем через масштаб по X (нужен pivot в центре основания).
     private void ApplyFlip(GameObject go)
     {
         if (go == null) return;

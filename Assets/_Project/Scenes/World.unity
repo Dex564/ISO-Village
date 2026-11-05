@@ -197,37 +197,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!1 &78936041
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 78936042}
-  m_Layer: 0
-  m_Name: Ghost
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &78936042
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 78936041}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.05103, y: 1.18644, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &262334746
 GameObject:
   m_ObjectHideFlags: 0
@@ -286,10 +255,10 @@ MonoBehaviour:
   stoneNoiseScale: 0.1
   stoneNoiseThreshold: 0.6
   stoneChance: 0.35
-  size: 64
+  size: 200
   useRandomSeed: 1
   seed: 715019
-  startRadius: 20
+  startRadius: 3
   guaranteedStonesRadius: 30
   guaranteedStonesCount: 4
 --- !u!114 &262334749
@@ -382,6 +351,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &866849660
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 866849661}
+  m_Layer: 0
+  m_Name: Buildings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &866849661
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866849660}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.25481, y: -0.54028, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &930386937
 GameObject:
   m_ObjectHideFlags: 0
@@ -431,7 +431,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8570c1a7bfa66ba419da177f9979a4f9, type: 2}
   startIndex: 0
   mainCamera: {fileID: 1883170507}
-  buildingsParent: {fileID: 0}
+  buildingsParent: {fileID: 866849661}
   ghostAlpha: 0.6
   validTint: {r: 0.21560161, g: 0.8962264, b: 0.30327237, a: 1}
   invalidTint: {r: 1, g: 0.3, b: 0.3, a: 1}
@@ -830,7 +830,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.07}
+  m_Offset: {x: 0.00026866794, y: 0.04736074}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
@@ -840,8 +840,8 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.45, y: 0.1}
-  m_EdgeRadius: 0.02
+  m_Size: {x: 0.28186357, y: 0.031243715}
+  m_EdgeRadius: 0
 --- !u!1 &1546476402
 GameObject:
   m_ObjectHideFlags: 0
@@ -1261,4 +1261,4 @@ SceneRoots:
   - {fileID: 930386938}
   - {fileID: 262334747}
   - {fileID: 624194745}
-  - {fileID: 78936042}
+  - {fileID: 866849661}

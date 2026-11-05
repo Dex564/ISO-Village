@@ -92,7 +92,7 @@ public class WorldGenerator : MonoBehaviour
             for (int y = 0; y < size; y++)
             {
                 Vector2Int pos = map.Origin + new Vector2Int(x, y);
-                if (DistanceFromCenter(pos) <= startRadius) continue;
+                if (MaxDistanceFromCenter(pos) <= startRadius) continue;
 
                 float n = Mathf.PerlinNoise(offset.x + x * stoneNoiseScale, offset.y + y * stoneNoiseScale);
                 if (n < stoneNoiseThreshold) continue;
@@ -116,7 +116,7 @@ public class WorldGenerator : MonoBehaviour
                 rng.Next(-guaranteedStonesRadius, guaranteedStonesRadius + 1),
                 rng.Next(-guaranteedStonesRadius, guaranteedStonesRadius + 1));
 
-            if (DistanceFromCenter(pos) <= startRadius) continue;
+            if (MaxDistanceFromCenter(pos) <= startRadius) continue;
             if (TryPlaceStone(pos)) count++;
         }
 
@@ -165,8 +165,7 @@ public class WorldGenerator : MonoBehaviour
         return count;
     }
 
-    // Расстояние от центра карты (0,0) в клетках. На экране это ромб.
-    private static int DistanceFromCenter(Vector2Int pos)
+    private static int MaxDistanceFromCenter(Vector2Int pos)
     {
         return Mathf.Max(Mathf.Abs(pos.x), Mathf.Abs(pos.y));
     }
