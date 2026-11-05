@@ -255,6 +255,8 @@ MonoBehaviour:
   stoneNoiseScale: 0.1
   stoneNoiseThreshold: 0.6
   stoneChance: 0.35
+  stoneAnchor: 2
+  stoneJitter: 0
   size: 200
   useRandomSeed: 1
   seed: 715019

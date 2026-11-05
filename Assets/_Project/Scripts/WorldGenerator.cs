@@ -1,30 +1,32 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class WorldGenerator : MonoBehaviour
 {
-    [Header("Ссылки")]
+    [Header("РЎСЃС‹Р»РєРё")]
     [SerializeField] private WorldMap map;
     [SerializeField] private Tilemap groundTilemap;
     [SerializeField] private Transform resourcesParent;
 
-    [Header("Земля")]
+    [Header("Р—РµРјР»СЏ")]
     [SerializeField] private TileBase[] grassTiles = new TileBase[2];
     [SerializeField, Range(0.05f, 0.3f)] private float grassNoiseScale = 0.12f;
     [SerializeField, Range(0f, 1f)] private float grassVariantThreshold = 0.55f;
 
-    [Header("Камни")]
+    [Header("РљР°РјРЅРё")]
     [SerializeField] private GameObject stonePrefab;
     [SerializeField, Range(0.05f, 0.3f)] private float stoneNoiseScale = 0.1f;
     [SerializeField, Range(0f, 1f)] private float stoneNoiseThreshold = 0.6f;
     [SerializeField, Range(0f, 1f)] private float stoneChance = 0.35f;
+    [SerializeField] private CellAnchor stoneAnchor = CellAnchor.Center;
+    [SerializeField, Range(0f, 0.25f)] private float stoneJitter = 0f;
 
-    [Header("Карта")]
+    [Header("РљР°СЂС‚Р°")]
     [SerializeField] private int size = 64;
     [SerializeField] private bool useRandomSeed = true;
     [SerializeField] private int seed = 12345;
 
-    [Header("Стартовая зона")]
+    [Header("РЎС‚Р°СЂС‚РѕРІР°СЏ Р·РѕРЅР°")]
     [SerializeField] private int startRadius = 20;
     [SerializeField] private int guaranteedStonesRadius = 30;
     [SerializeField] private int guaranteedStonesCount = 4;
@@ -34,7 +36,7 @@ public class WorldGenerator : MonoBehaviour
         Generate();
     }
 
-    // Можно вызвать в режиме Play: ПКМ по заголовку компонента -> Generate.
+    // РњРѕР¶РЅРѕ РІС‹Р·РІР°С‚СЊ РІ СЂРµР¶РёРјРµ Play: РџРљРњ РїРѕ Р·Р°РіРѕР»РѕРІРєСѓ РєРѕРјРїРѕРЅРµРЅС‚Р° -> Generate.
     [ContextMenu("Generate")]
     public void Generate()
     {
@@ -98,7 +100,7 @@ public class WorldGenerator : MonoBehaviour
                 if (n < stoneNoiseThreshold) continue;
                 if (rng.NextDouble() > stoneChance) continue;
 
-                TryPlaceStone(pos);
+                TryPlaceStone(pos, rng);
             }
         }
     }
@@ -117,21 +119,27 @@ public class WorldGenerator : MonoBehaviour
                 rng.Next(-guaranteedStonesRadius, guaranteedStonesRadius + 1));
 
             if (MaxDistanceFromCenter(pos) <= startRadius) continue;
-            if (TryPlaceStone(pos)) count++;
+            if (TryPlaceStone(pos, rng)) count++;
         }
 
         if (count < guaranteedStonesCount)
-            Debug.LogWarning("WorldGenerator: не удалось разместить нужное число камней у старта.");
+            Debug.LogWarning("WorldGenerator: РЅРµ СѓРґР°Р»РѕСЃСЊ СЂР°Р·РјРµСЃС‚РёС‚СЊ РЅСѓР¶РЅРѕРµ С‡РёСЃР»Рѕ РєР°РјРЅРµР№ Сѓ СЃС‚Р°СЂС‚Р°.");
     }
 
 
-    private bool TryPlaceStone(Vector2Int pos)
+    private bool TryPlaceStone(Vector2Int pos, System.Random rng)
     {
         Cell cell = map.GetCell(pos);
         if (cell == null || !cell.Buildable) return false;
         if (HasOccupiedNeighbour(pos)) return false;
 
-        GameObject stone = Instantiate(stonePrefab, map.CellToWorld(pos), Quaternion.identity, resourcesParent);
+        Vector2 offset = stoneAnchor.ToOffset();
+        if (stoneJitter > 0f)
+        {
+            offset += new Vector2((float)(rng.NextDouble() * 2 - 1) * stoneJitter, (float)(rng.NextDouble() * 2 - 1) * stoneJitter);
+        }
+        GameObject stone = Instantiate(stonePrefab, map.CellToWorld(pos, offset), Quaternion.identity, resourcesParent);
+
         stone.name = $"Stone {pos.x},{pos.y}";
         cell.Occupant = stone;
         return true;
@@ -187,12 +195,12 @@ public class WorldGenerator : MonoBehaviour
     {
         if (map == null || groundTilemap == null || resourcesParent == null || stonePrefab == null)
         {
-            Debug.LogError("WorldGenerator: не назначены ссылки в инспекторе (map, groundTilemap, resourcesParent, stonePrefab).");
+            Debug.LogError("WorldGenerator: РЅРµ РЅР°Р·РЅР°С‡РµРЅС‹ СЃСЃС‹Р»РєРё РІ РёРЅСЃРїРµРєС‚РѕСЂРµ (map, groundTilemap, resourcesParent, stonePrefab).");
             return false;
         }
         if (grassTiles == null || grassTiles.Length < 2 || grassTiles[0] == null || grassTiles[1] == null)
         {
-            Debug.LogError("WorldGenerator: нужны два тайла травы в массиве grassTiles.");
+            Debug.LogError("WorldGenerator: РЅСѓР¶РЅС‹ РґРІР° С‚Р°Р№Р»Р° С‚СЂР°РІС‹ РІ РјР°СЃСЃРёРІРµ grassTiles.");
             return false;
         }
         return true;

@@ -1,4 +1,4 @@
-using UnityEngine;
+п»їusing UnityEngine;
 
 public enum TerrainType
 {
@@ -10,7 +10,7 @@ public class Cell
 {
     public readonly Vector2Int Pos;
     public TerrainType Terrain;
-    public int GroundVariant;      // какой из тайлов, нужно только для отрисовки
+    public int GroundVariant;      // РєР°РєРѕР№ РёР· С‚Р°Р№Р»РѕРІ, РЅСѓР¶РЅРѕ С‚РѕР»СЊРєРѕ РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё
     public GameObject Occupant;
 
     public Cell(Vector2Int pos, TerrainType terrain, int groundVariant)

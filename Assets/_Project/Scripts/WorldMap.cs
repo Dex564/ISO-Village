@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+п»їusing System.Collections.Generic;
 using UnityEngine;
 
-/// Хранит данные карты и отвечает за все переводы координат.
-/// Остальные скрипты не должны вызывать grid.WorldToCell сами, только через этот класс.
+/// РҐСЂР°РЅРёС‚ РґР°РЅРЅС‹Рµ РєР°СЂС‚С‹ Рё РѕС‚РІРµС‡Р°РµС‚ Р·Р° РІСЃРµ РїРµСЂРµРІРѕРґС‹ РєРѕРѕСЂРґРёРЅР°С‚.
+/// РћСЃС‚Р°Р»СЊРЅС‹Рµ СЃРєСЂРёРїС‚С‹ РЅРµ РґРѕР»Р¶РЅС‹ РІС‹Р·С‹РІР°С‚СЊ grid.WorldToCell СЃР°РјРё, С‚РѕР»СЊРєРѕ С‡РµСЂРµР· СЌС‚РѕС‚ РєР»Р°СЃСЃ.
 
 public class WorldMap : MonoBehaviour
 {
@@ -10,10 +10,9 @@ public class WorldMap : MonoBehaviour
 
     [SerializeField] private Grid grid;
 
-    public int Size { get; private set; }
-
-    /// Координата клетки, лежащей в cells[0, 0]. Для размера 64 это (-32, -32).
+    /// РљРѕРѕСЂРґРёРЅР°С‚Р° РєР»РµС‚РєРё, Р»РµР¶Р°С‰РµР№ РІ cells[0, 0]. Р”Р»СЏ СЂР°Р·РјРµСЂР° 64 СЌС‚Рѕ (-32, -32).
     public Vector2Int Origin { get; private set; }
+    public int Size { get; private set; }
 
     private Cell[,] cells;
 
@@ -81,7 +80,16 @@ public class WorldMap : MonoBehaviour
         return w;
     }
 
-    // origin: клетка с наименьшими x и y; footprint: размер основания в клетках, например (2, 2).
+    public Vector3 CellToWorld(Vector2Int pos, Vector2 offset)
+    {
+        Vector3 center = CellToWorld(pos);
+        Vector3 local = grid.CellToLocalInterpolated(new Vector3(offset.x, offset.y, 0f)) - grid.CellToLocalInterpolated(Vector3.zero);
+        Vector3 result = center + grid.transform.TransformVector(local);
+        result.z = 0f;
+        return result;
+    }
+
+    // origin: РєР»РµС‚РєР° СЃ РЅР°РёРјРµРЅСЊС€РёРјРё x Рё y; footprint: СЂР°Р·РјРµСЂ РѕСЃРЅРѕРІР°РЅРёСЏ РІ РєР»РµС‚РєР°С…, РЅР°РїСЂРёРјРµСЂ (2, 2).
     public bool CanPlace(Vector2Int origin, Vector2Int footprint)
     {
         for (int x = 0; x < footprint.x; x++)

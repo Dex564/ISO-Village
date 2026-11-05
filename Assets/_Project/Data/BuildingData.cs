@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewBuilding", menuName = "Placement/Building Data")]
 public class BuildingData : ScriptableObject
