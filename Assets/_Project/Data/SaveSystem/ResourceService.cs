@@ -18,24 +18,32 @@ public static class ResourceService
         get => SaveManager.Current.stone;
         set { SaveManager.Current.stone = Mathf.Max(0, value); OnChanged?.Invoke(); }
     }
+    public static int Crystal
+    {
+        get => SaveManager.Current.crystal;
+        set { SaveManager.Current.crystal = Mathf.Max(0, value); OnChanged?.Invoke(); }
+    }
+
 
     public static event Action OnChanged;
 
-    public static void Add(int coins = 0, int wood = 0, int stone = 0)
+    public static void Add(int coins = 0, int wood = 0, int stone = 0, int crystal = 0)
     {
         SaveManager.Current.coins += coins;
         SaveManager.Current.wood  += wood;
         SaveManager.Current.stone += stone;
+        SaveManager.Current.crystal += crystal;
         OnChanged?.Invoke();
     }
 
-    public static bool TrySpend(int coins = 0, int wood = 0, int stone = 0)
+    public static bool TrySpend(int coins = 0, int wood = 0, int stone = 0, int crystal = 0)
     {
         var d = SaveManager.Current;
-        if (d.coins < coins || d.wood < wood || d.stone < stone) return false;
+        if (d.coins < coins || d.wood < wood || d.stone < stone || d.crystal < crystal) return false;
         d.coins -= coins;
         d.wood  -= wood;
         d.stone -= stone;
+        d.crystal -= crystal;
         OnChanged?.Invoke();
         return true;
     }

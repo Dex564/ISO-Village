@@ -8,6 +8,7 @@ public class SaveData
     public int coins = 9999;
     public int wood = 9999;
     public int stone = 9999;
+    public int crystal = 9999;
 
     public int seed = 13376767;
     public List<PlacedBuildingData> buildings = new();
