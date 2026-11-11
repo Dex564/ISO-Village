@@ -5,10 +5,13 @@ using UnityEngine;
 [Serializable]
 public class SaveData
 {
-    public int coins = 9999;
-    public int wood = 9999;
-    public int stone = 9999;
-    public int crystal = 9999;
+    [SerializeField] public Dictionary<ResourceType, int> resources = new()
+    {
+        [ResourceType.Coins] = 9999,
+        [ResourceType.Wood] = 9999,
+        [ResourceType.Stone] = 9999,
+        [ResourceType.Crystals] = 9999,
+    };
 
     public int seed = 13376767;
     public List<PlacedBuildingData> buildings = new();

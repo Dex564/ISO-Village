@@ -3,48 +3,22 @@ using UnityEngine;
 
 public static class ResourceService
 {
-    public static int Coins
-    {
-        get => SaveManager.Current.coins;
-        set { SaveManager.Current.coins = Mathf.Max(0, value); OnChanged?.Invoke(); }
-    }
-    public static int Wood
-    {
-        get => SaveManager.Current.wood;
-        set { SaveManager.Current.wood = Mathf.Max(0, value); OnChanged?.Invoke(); }
-    }
-    public static int Stone
-    {
-        get => SaveManager.Current.stone;
-        set { SaveManager.Current.stone = Mathf.Max(0, value); OnChanged?.Invoke(); }
-    }
-    public static int Crystal
-    {
-        get => SaveManager.Current.crystal;
-        set { SaveManager.Current.crystal = Mathf.Max(0, value); OnChanged?.Invoke(); }
-    }
-
-
     public static event Action OnChanged;
 
-    public static void Add(int coins = 0, int wood = 0, int stone = 0, int crystal = 0)
+    public static int Get(ResourceType t) => SaveManager.Current.resources.TryGetValue(t, out var v) ? v : 0;
+
+    public static void Set(ResourceType t, int value)
     {
-        SaveManager.Current.coins += coins;
-        SaveManager.Current.wood  += wood;
-        SaveManager.Current.stone += stone;
-        SaveManager.Current.crystal += crystal;
+        SaveManager.Current.resources[t] = Mathf.Max(0, value);
         OnChanged?.Invoke();
     }
 
-    public static bool TrySpend(int coins = 0, int wood = 0, int stone = 0, int crystal = 0)
+    public static void Add(ResourceType t, int amount) => Set(t, Get(t) + amount);
+
+    public static bool TrySpend(ResourceType t, int amount)
     {
-        var d = SaveManager.Current;
-        if (d.coins < coins || d.wood < wood || d.stone < stone || d.crystal < crystal) return false;
-        d.coins -= coins;
-        d.wood  -= wood;
-        d.stone -= stone;
-        d.crystal -= crystal;
-        OnChanged?.Invoke();
+        if (Get(t) < amount) return false;
+        Set(t, Get(t) - amount);
         return true;
     }
 }
