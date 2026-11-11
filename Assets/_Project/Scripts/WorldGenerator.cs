@@ -28,13 +28,11 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField] private int guaranteedStonesRadius = 30;
     [SerializeField] private int guaranteedStonesCount = 4;
 
-    private int seed = WorldManager.Seed;
-
     public event System.Action OnWorldGenerated;
 
     // ����� ������� � ������ Play: ��� �� ��������� ���������� -> Generate.
     [ContextMenu("Generate")]
-    public void Generate()
+    public void Generate(int seed)
     {
         if (!ValidateReferences()) return;
 

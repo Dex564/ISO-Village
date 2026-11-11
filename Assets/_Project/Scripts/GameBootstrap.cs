@@ -10,9 +10,10 @@ public class GameBootstrap : MonoBehaviour
     {
         worldGenerator.OnWorldGenerated += OnWorldReady;
 
-        SaveManager.Load();
+        var data = SaveManager.Current;
 
-        worldGenerator.Generate();
+        Debug.Log($"Запуск мира '{data.worldName}', сид = {data.seed}");
+        worldGenerator.Generate(data.seed);
     }
 
     private void OnWorldReady()

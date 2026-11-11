@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42e5f3e058d708c4e95bef0ace343c13, type: 3}
   m_Name: TallHouse
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  buildingName: Building
-  buildingPrefab: {fileID: 0}
-  footprint: {x: 0, y: 0}
-  coins: 0
-  wood: 0
-  stone: 0
+  buildingName: TallHouse
+  buildingPrefab: {fileID: 4009902542816301566, guid: 845286c290e5dad4ca63c6a054f2d315, type: 3}
+  footprint: {x: 2, y: 2}
+  coins: 10
+  wood: 30
+  stone: 40
