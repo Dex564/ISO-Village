@@ -3,13 +3,23 @@ using UnityEngine;
 public class GameBootstrap : MonoBehaviour
 {
     [SerializeField] private WorldMap worldMap;
+    [SerializeField] private WorldGenerator worldGenerator;
     [SerializeField] private BuildingManager buildingManager;
-    [SerializeField] private PlacementSystem placementSystem;
 
     private void Start()
     {
+        worldGenerator.OnWorldGenerated += OnWorldReady;
+
         SaveManager.Load();
+
+        worldGenerator.Generate();
+    }
+
+    private void OnWorldReady()
+    {
         buildingManager.RebuildAll(worldMap);
+
+        worldGenerator.OnWorldGenerated -= OnWorldReady;
     }
 
     private void OnApplicationPause(bool paused) { if (paused) SaveManager.Save(); }

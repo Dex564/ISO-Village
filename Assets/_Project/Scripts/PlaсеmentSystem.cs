@@ -155,6 +155,10 @@ public class PlacementSystem : MonoBehaviour
     private void PlaceBuilding(WorldMap map, Vector2Int origin, Vector2Int footprint)
     {
         BuildingData data = CurrentBuilding;
+
+        bool bought = ResourceService.TrySpend(new(ResourceType.Coins, data.coins), new(ResourceType.Wood, data.wood), new(ResourceType.Stone, data.stone));
+        if (!bought) return;
+
         Vector3 center = GetCenter(map, origin, footprint);
 
         GameObject building = Instantiate(data.buildingPrefab, center, Quaternion.identity, buildingsParent);
@@ -165,7 +169,6 @@ public class PlacementSystem : MonoBehaviour
 
         buildingManager.RegisterPlaced(data, origin, footprint, flipped);
 
-        // Здесь позже: проверка и списание data.cost через ResourceStock.
     }
 
     // ---------- Призрак ----------

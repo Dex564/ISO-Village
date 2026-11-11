@@ -3,6 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
+public class WorldMeta
+{
+    public string id;
+    public string worldName;
+    public int seed;
+    public string lastPlayed;
+}
+
+[Serializable]
 public class SaveData
 {
     [SerializeField] public Dictionary<ResourceType, int> resources = new()
@@ -12,8 +21,9 @@ public class SaveData
         [ResourceType.Stone] = 9999,
         [ResourceType.Crystals] = 9999,
     };
-
-    public int seed = 13376767;
+    public string worldName;
+    public int seed = 0;
+    public string lastPlayed;
     public List<PlacedBuildingData> buildings = new();
 }
 

@@ -15,10 +15,22 @@ public static class ResourceService
 
     public static void Add(ResourceType t, int amount) => Set(t, Get(t) + amount);
 
-    public static bool TrySpend(ResourceType t, int amount)
+    public static bool TrySpend(params ResourceCost[] costs)
     {
-        if (Get(t) < amount) return false;
-        Set(t, Get(t) - amount);
+        foreach (var c in costs)
+            if (Get(c.Type) < c.Amount) return false;
+
+        foreach (var c in costs)
+            SaveManager.Current.resources[c.Type] -= c.Amount;
+
+        OnChanged?.Invoke();
         return true;
+    }
+
+    public readonly struct ResourceCost
+    {
+        public readonly ResourceType Type;
+        public readonly int Amount;
+        public ResourceCost(ResourceType type, int amount) { Type = type; Amount = amount; }
     }
 }

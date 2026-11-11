@@ -13,5 +13,7 @@ public class BuildingData : ScriptableObject
     public Vector2Int footprint;
 
     [Header("Gameplay")]
-    [Min(0)] public int cost = 0;
+    [Min(0)] public int coins = 0;
+    [Min(0)] public int wood = 0;
+    [Min(0)] public int stone = 0;
 }

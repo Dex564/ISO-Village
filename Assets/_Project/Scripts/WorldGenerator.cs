@@ -30,10 +30,7 @@ public class WorldGenerator : MonoBehaviour
 
     private int seed = WorldManager.Seed;
 
-    private void Start()
-    {
-        Generate();
-    }
+    public event System.Action OnWorldGenerated;
 
     // ����� ������� � ������ Play: ��� �� ��������� ���������� -> Generate.
     [ContextMenu("Generate")]
@@ -58,6 +55,8 @@ public class WorldGenerator : MonoBehaviour
         PaintGround();
         PlaceStones(rng, stoneOffset);
         EnsureStartStones(rng);
+
+        OnWorldGenerated?.Invoke();
     }
 
 
