@@ -15,4 +15,6 @@ MonoBehaviour:
   buildingName: ShortHouse
   buildingPrefab: {fileID: 4009902542816301566, guid: 515edb4468b52384b874682e0bd3ba08, type: 3}
   footprint: {x: 2, y: 2}
-  cost: 10
+  coins: 5
+  wood: 25
+  stone: 30

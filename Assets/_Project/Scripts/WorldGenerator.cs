@@ -24,25 +24,24 @@ public class WorldGenerator : MonoBehaviour
     [Header("Карта")]
     [SerializeField] private int size = 64;
     [SerializeField] private bool useRandomSeed = true;
-    [SerializeField] private int seed = 12345;
 
     [Header("Стартовая зона")]
     [SerializeField] private int startRadius = 20;
     [SerializeField] private int guaranteedStonesRadius = 30;
     [SerializeField] private int guaranteedStonesCount = 4;
 
-    private void Start()
-    {
-        Generate();
-    }
+    public event System.Action OnWorldGenerated;
 
     // Можно вызвать в режиме Play: ПКМ по заголовку компонента -> Generate.
     [ContextMenu("Generate")]
-    public void Generate()
+    public void Generate(int seed)
     {
         if (!ValidateReferences()) return;
 
-        if (useRandomSeed) seed = Random.Range(0, 1000000);
+        if (useRandomSeed) {
+            seed = Random.Range(0, 1000000);
+            WorldManager.Seed = seed;
+        }
         Debug.Log($"WorldGenerator: seed = {seed}");
 
         Clear();
@@ -56,6 +55,8 @@ public class WorldGenerator : MonoBehaviour
         PaintGround();
         PlaceStones(rng, stoneOffset);
         EnsureStartStones(rng);
+
+        OnWorldGenerated?.Invoke();
     }
 
 

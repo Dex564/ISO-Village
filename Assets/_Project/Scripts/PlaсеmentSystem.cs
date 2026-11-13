@@ -10,6 +10,7 @@ public class PlacementSystem : MonoBehaviour
     [Header("References")]
     [SerializeField] private Camera mainCamera;
     [SerializeField] private Transform buildingsParent;
+    [SerializeField] private BuildingManager buildingManager;
 
     [Header("Ghost")]
     [SerializeField, Range(0f, 1f)] private float ghostAlpha = 0.6f;
@@ -140,6 +141,10 @@ public class PlacementSystem : MonoBehaviour
     private void PlaceBuilding(WorldMap map, Vector2Int origin, Vector2Int footprint)
     {
         BuildingData data = CurrentBuilding;
+
+        bool bought = ResourceService.TrySpend(new(ResourceType.Coins, data.coins), new(ResourceType.Wood, data.wood), new(ResourceType.Stone, data.stone));
+        if (!bought) return;
+
         Vector3 center = GetCenter(map, origin, footprint);
 
         GameObject building = Instantiate(data.buildingPrefab, center, Quaternion.identity, buildingsParent);
@@ -147,6 +152,9 @@ public class PlacementSystem : MonoBehaviour
         ApplyFlip(building);
 
         map.Occupy(origin, footprint, building);
+
+        buildingManager.RegisterPlaced(data, origin, footprint, flipped);
+
     }
 
 
