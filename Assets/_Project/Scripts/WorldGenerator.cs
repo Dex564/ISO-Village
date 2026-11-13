@@ -37,6 +37,7 @@ public class WorldGenerator : MonoBehaviour
     public void Generate(int seed)
     {
         if (!ValidateReferences()) return;
+        Debug.Log($"WorldGenerator: seed = {seed}");
 
         if (useRandomSeed) {
             seed = Random.Range(0, 1000000);

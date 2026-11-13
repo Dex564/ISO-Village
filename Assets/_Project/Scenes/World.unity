@@ -372,7 +372,6 @@ MonoBehaviour:
   stoneJitter: 0
   size: 200
   useRandomSeed: 1
-  seed: 715019
   startRadius: 3
   guaranteedStonesRadius: 30
   guaranteedStonesCount: 4
@@ -1795,6 +1794,22 @@ MonoBehaviour:
   minSize: 2
   maxSize: 8
   smoothTime: 0.05
+--- !u!114 &1883170512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1883170505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d851a0b2731ec2f4995a18839ab9d532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FreeCameraController
+  moveSpeed: 2
+  dragMouseButton: 2
+  clampToMap: 1
+  boundsPadding: 2
 --- !u!1 &1937569014
 GameObject:
   m_ObjectHideFlags: 0
@@ -1851,7 +1866,6 @@ SceneRoots:
   - {fileID: 71051661}
   - {fileID: 262334747}
   - {fileID: 624194745}
-  - {fileID: 78936042}
   - {fileID: 1176320933}
   - {fileID: 1794954901}
   - {fileID: 1937569016}
@@ -1859,3 +1873,5 @@ SceneRoots:
   - {fileID: 406059571}
   - {fileID: 1502266592}
   - {fileID: 1737669195}
+  - {fileID: 2335978}
+  - {fileID: 866849661}
