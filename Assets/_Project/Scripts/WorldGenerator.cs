@@ -39,7 +39,8 @@ public class WorldGenerator : MonoBehaviour
         if (!ValidateReferences()) return;
         Debug.Log($"WorldGenerator: seed = {seed}");
 
-        if (useRandomSeed) {
+        if (useRandomSeed && string.IsNullOrEmpty(SaveManager.CurrentWorldId))
+        {
             seed = Random.Range(0, 1000000);
             WorldManager.Seed = seed;
         }
