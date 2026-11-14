@@ -1,6 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+
+[Serializable] public class ResourceEntry { public ResourceType type; public int amount; }
 
 [Serializable]
 public class WorldMeta
@@ -14,12 +16,12 @@ public class WorldMeta
 [Serializable]
 public class SaveData
 {
-    [SerializeField] public Dictionary<ResourceType, int> resources = new()
+    public List<ResourceEntry> resources = new()
     {
-        [ResourceType.Coins] = 9999,
-        [ResourceType.Wood] = 9999,
-        [ResourceType.Stone] = 9999,
-        [ResourceType.Crystals] = 9999,
+        new() { type = ResourceType.Coins,    amount = 100 },
+        new() { type = ResourceType.Wood,     amount = 50 },
+        new() { type = ResourceType.Stone,    amount = 50 },
+        new() { type = ResourceType.Crystals, amount = 0 },
     };
     public string worldName;
     public int seed = 0;

@@ -32,12 +32,10 @@ public class WorldGenerator : MonoBehaviour
 
     public event System.Action OnWorldGenerated;
 
-    // Можно вызвать в режиме Play: ПКМ по заголовку компонента -> Generate.
     [ContextMenu("Generate")]
     public void Generate(int seed)
     {
         if (!ValidateReferences()) return;
-        Debug.Log($"WorldGenerator: seed = {seed}");
 
         if (useRandomSeed && string.IsNullOrEmpty(SaveManager.CurrentWorldId))
         {
