@@ -4,7 +4,8 @@
 public class BuildingData : ScriptableObject
 {
     [Header("Identity")]
-    public string buildingName = "Building";
+    public string buildingNameID = "Building";
+    public string buildingName = "Здание";
 
     [Header("Prefabs")]
     public GameObject buildingPrefab;

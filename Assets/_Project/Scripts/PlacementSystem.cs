@@ -4,8 +4,8 @@ using UnityEngine;
 public class PlacementSystem : MonoBehaviour
 {
     [Header("Buildings")]
-    [SerializeField] private BuildingData[] availableBuildings;
     [SerializeField] private int startIndex = 0;
+    private BuildingData[] availableBuildings;
 
     [Header("References")]
     [SerializeField] private Camera mainCamera;
@@ -39,6 +39,7 @@ public class PlacementSystem : MonoBehaviour
     private void Awake()
     {
         if (mainCamera == null) mainCamera = Camera.main;
+        availableBuildings = buildingManager.availableBuildings;
 
         if (availableBuildings == null || availableBuildings.Length == 0)
         {
@@ -148,7 +149,7 @@ public class PlacementSystem : MonoBehaviour
         Vector3 center = GetCenter(map, origin, footprint);
 
         GameObject building = Instantiate(data.buildingPrefab, center, Quaternion.identity, buildingsParent);
-        building.name = data.buildingName;
+        building.name = data.buildingNameID;
         ApplyFlip(building);
 
         map.Occupy(origin, footprint, building);
@@ -170,7 +171,7 @@ public class PlacementSystem : MonoBehaviour
         }
 
         ghost = Instantiate(data.buildingPrefab, buildingsParent);
-        ghost.name = data.buildingName + "_Ghost";
+        ghost.name = data.buildingNameID + "_Ghost";
 
         foreach (var mb in ghost.GetComponentsInChildren<MonoBehaviour>(true)) Destroy(mb);
         foreach (var rb in ghost.GetComponentsInChildren<Rigidbody2D>(true)) Destroy(rb);

@@ -4,7 +4,7 @@ using UnityEngine;
 public class BuildingManager : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private BuildingData[] availableBuildings;
+    [SerializeField] public BuildingData[] availableBuildings;
     [SerializeField] private Transform buildingsParent;
 
     private readonly Dictionary<string, BuildingData> _byName = new();
@@ -13,23 +13,23 @@ public class BuildingManager : MonoBehaviour
     {
         foreach (var b in availableBuildings)
         {
-            if (b == null || string.IsNullOrEmpty(b.buildingName)) continue;
-            if (_byName.ContainsKey(b.buildingName))
+            if (b == null || string.IsNullOrEmpty(b.buildingNameID)) continue;
+            if (_byName.ContainsKey(b.buildingNameID))
             {
-                Debug.LogError($"[BuildingManager] Дублирующийся buildingName '{b.buildingName}'");
+                Debug.LogError($"[BuildingManager] Дублирующийся buildingName '{b.buildingNameID}'");
                 continue;
             }
-            _byName[b.buildingName] = b;
+            _byName[b.buildingNameID] = b;
         }
     }
 
     public void RegisterPlaced(BuildingData data, Vector2Int origin, Vector2Int footprint, bool flipped)
     {
-        if (data == null || string.IsNullOrEmpty(data.buildingName)) return;
+        if (data == null || string.IsNullOrEmpty(data.buildingNameID)) return;
 
         SaveManager.Current.buildings.Add(new PlacedBuildingData
         {
-            buildingName = data.buildingName,
+            buildingName = data.buildingNameID,
             originX = origin.x,
             originY = origin.y,
             footprintX = footprint.x,
@@ -62,7 +62,7 @@ public class BuildingManager : MonoBehaviour
 
             Vector3 center = GetCenter(map, origin, footprint);
             GameObject building = Instantiate(data.buildingPrefab, center, Quaternion.identity, buildingsParent);
-            building.name = data.buildingName;
+            building.name = data.buildingNameID;
 
             Vector3 scale = data.buildingPrefab.transform.localScale;
             scale.x = Mathf.Abs(scale.x) * (b.flipped ? -1f : 1f);
