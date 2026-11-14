@@ -31,7 +31,7 @@ public class CellCursor : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         if (mainCamera == null) mainCamera = Camera.main;
 
-        if (sr.sprite == null) sr.sprite = CreateDiamondSprite();
+        if (sr.sprite == null) sr.sprite = CellSprites.Diamond;
 
         if (System.Array.Exists(SortingLayer.layers, l => l.name == sortingLayerName))
         {

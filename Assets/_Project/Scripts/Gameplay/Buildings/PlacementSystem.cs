@@ -27,6 +27,7 @@ public class PlacementSystem : MonoBehaviour
     private bool isPlacing;
     private bool flipped;
     private int currentIndex;
+    public bool IsPlacing => isPlacing;
 
     private GameObject ghost;
     private readonly List<SpriteRenderer> ghostRenderers = new List<SpriteRenderer>();

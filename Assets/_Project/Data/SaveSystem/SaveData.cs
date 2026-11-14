@@ -23,6 +23,7 @@ public class SaveData
         new() { type = ResourceType.Stone,    amount = 50 },
         new() { type = ResourceType.Crystals, amount = 0 },
     };
+    public List<ResourceNodeState> resourceNodes = new();
     public string worldName;
     public int seed = 0;
     public string lastPlayed;

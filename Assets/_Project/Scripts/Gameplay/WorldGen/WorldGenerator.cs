@@ -20,6 +20,8 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float stoneChance = 0.35f;
     [SerializeField] private CellAnchor stoneAnchor = CellAnchor.Center;
     [SerializeField, Range(0f, 0.25f)] private float stoneJitter = 0f;
+    [Tooltip("Описание камня: запас, скорость добычи, навык. Файл Create -> Colony -> Resource Node Data")]
+    [SerializeField] private ResourceNodeData stoneData;
 
     [Header("Карта")]
     [SerializeField] private int size = 64;
@@ -32,6 +34,14 @@ public class WorldGenerator : MonoBehaviour
 
     public event System.Action OnWorldGenerated;
 
+    // «Соли» для SeededRandom: у каждого назначения случайного числа свой номер.
+    private const int SaltStoneChance = 101;
+    private const int SaltStoneJitterX = 102;
+    private const int SaltStoneJitterY = 103;
+    private const int SaltStonePool = 104;
+
+    private int currentSeed;
+
     [ContextMenu("Generate")]
     public void Generate(int seed)
     {
@@ -43,6 +53,7 @@ public class WorldGenerator : MonoBehaviour
             WorldManager.Seed = seed;
         }
         Debug.Log($"WorldGenerator: seed = {seed}");
+        currentSeed = seed;
 
         Clear();
 
@@ -53,8 +64,9 @@ public class WorldGenerator : MonoBehaviour
         map.Init(size);
         FillCells(grassOffset);
         PaintGround();
-        PlaceStones(rng, stoneOffset);
+        PlaceStones(stoneOffset);
         EnsureStartStones(rng);
+        LogChecksum();
 
         OnWorldGenerated?.Invoke();
     }
@@ -88,7 +100,7 @@ public class WorldGenerator : MonoBehaviour
         groundTilemap.SetTilesBlock(new BoundsInt(map.Origin.x, map.Origin.y, 0, size, size, 1), tiles);
     }
 
-    private void PlaceStones(System.Random rng, Vector2 offset)
+    private void PlaceStones(Vector2 offset)
     {
         for (int x = 0; x < size; x++)
         {
@@ -99,14 +111,16 @@ public class WorldGenerator : MonoBehaviour
 
                 float n = Mathf.PerlinNoise(offset.x + x * stoneNoiseScale, offset.y + y * stoneNoiseScale);
                 if (n < stoneNoiseThreshold) continue;
-                if (rng.NextDouble() > stoneChance) continue;
+                // Шанс считаем по (seed, клетка), а не по общему потоку случайных чисел:
+                // результат для клетки не зависит от порядка обхода и от других ресурсов.
+                if (SeededRandom.Value01(currentSeed, pos, SaltStoneChance) > stoneChance) continue;
 
-                TryPlaceStone(pos, rng);
+                TryPlaceStone(pos);
             }
         }
     }
 
-    
+
     private void EnsureStartStones(System.Random rng)
     {
         int count = CountStonesInRadius(guaranteedStonesRadius);
@@ -120,7 +134,7 @@ public class WorldGenerator : MonoBehaviour
                 rng.Next(-guaranteedStonesRadius, guaranteedStonesRadius + 1));
 
             if (MaxDistanceFromCenter(pos) <= startRadius) continue;
-            if (TryPlaceStone(pos, rng)) count++;
+            if (TryPlaceStone(pos)) count++;
         }
 
         if (count < guaranteedStonesCount)
@@ -128,7 +142,7 @@ public class WorldGenerator : MonoBehaviour
     }
 
 
-    private bool TryPlaceStone(Vector2Int pos, System.Random rng)
+    private bool TryPlaceStone(Vector2Int pos)
     {
         Cell cell = map.GetCell(pos);
         if (cell == null || !cell.Buildable) return false;
@@ -137,11 +151,21 @@ public class WorldGenerator : MonoBehaviour
         Vector2 offset = stoneAnchor.ToOffset();
         if (stoneJitter > 0f)
         {
-            offset += new Vector2((float)(rng.NextDouble() * 2 - 1) * stoneJitter, (float)(rng.NextDouble() * 2 - 1) * stoneJitter);
+            float jx = SeededRandom.Value01(currentSeed, pos, SaltStoneJitterX) * 2f - 1f;
+            float jy = SeededRandom.Value01(currentSeed, pos, SaltStoneJitterY) * 2f - 1f;
+            offset += new Vector2(jx, jy) * stoneJitter;
         }
-        GameObject stone = Instantiate(stonePrefab, map.CellToWorld(pos, offset), Quaternion.identity, resourcesParent);
 
+        GameObject stone = Instantiate(stonePrefab, map.CellToWorld(pos, offset), Quaternion.identity, resourcesParent);
         stone.name = $"Stone {pos.x},{pos.y}";
+
+        // Запас камня тоже зависит только от (seed, клетка).
+        int pool = SeededRandom.Range(currentSeed, pos, SaltStonePool, stoneData.minPool, stoneData.maxPool);
+
+        ResourceNode node = stone.GetComponent<ResourceNode>();
+        if (node == null) node = stone.AddComponent<ResourceNode>();
+        node.Init(stoneData, pos, pool);
+
         cell.Occupant = stone;
         return true;
     }
@@ -184,6 +208,28 @@ public class WorldGenerator : MonoBehaviour
         return new Vector2(rng.Next(0, 10000), rng.Next(0, 10000));
     }
 
+    // Контрольная сумма мира: одинаковый seed обязан давать одинаковое число.
+    private void LogChecksum()
+    {
+        unchecked
+        {
+            uint hash = 2166136261u;
+            foreach (Cell c in map.AllCells())
+            {
+                hash = (hash ^ (uint)c.GroundVariant) * 16777619u;
+
+                ResourceNode n = c.Occupant != null ? c.Occupant.GetComponent<ResourceNode>() : null;
+                if (n == null) continue;
+
+                hash = (hash ^ (uint)c.Pos.x) * 16777619u;
+                hash = (hash ^ (uint)c.Pos.y) * 16777619u;
+                hash = (hash ^ (uint)n.Data.yieldType) * 16777619u;
+                hash = (hash ^ (uint)n.Remaining) * 16777619u;
+            }
+            Debug.Log($"WorldGenerator: контрольная сумма мира = {hash} (при том же seed число должно совпадать)");
+        }
+    }
+
     [ContextMenu("Clear")]
     private void Clear()
     {
@@ -194,9 +240,9 @@ public class WorldGenerator : MonoBehaviour
 
     private bool ValidateReferences()
     {
-        if (map == null || groundTilemap == null || resourcesParent == null || stonePrefab == null)
+        if (map == null || groundTilemap == null || resourcesParent == null || stonePrefab == null || stoneData == null)
         {
-            Debug.LogError("WorldGenerator: не назначены ссылки в инспекторе (map, groundTilemap, resourcesParent, stonePrefab).");
+            Debug.LogError("WorldGenerator: не назначены ссылки в инспекторе (map, groundTilemap, resourcesParent, stonePrefab, stoneData).");
             return false;
         }
         if (grassTiles == null || grassTiles.Length < 2 || grassTiles[0] == null || grassTiles[1] == null)

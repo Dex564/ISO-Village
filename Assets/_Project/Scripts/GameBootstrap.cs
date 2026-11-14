@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
 {
@@ -18,6 +18,7 @@ public class GameBootstrap : MonoBehaviour
 
     private void OnWorldReady()
     {
+        ResourceNodeSave.ApplyAll(worldMap);
         buildingManager.RebuildAll(worldMap);
 
         worldGenerator.OnWorldGenerated -= OnWorldReady;
