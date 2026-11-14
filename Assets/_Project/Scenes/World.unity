@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81a8cbc685cd6214f9827097f84ba135, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CellCursor
-  mainCamera: {fileID: 0}
+  mainCamera: {fileID: 1883170507}
   sortingLayerName: Overlay
   sortingOrder: 0
   freeColor: {r: 1, g: 1, b: 1, a: 0.9}
@@ -673,9 +673,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa643b08d3bac65449c37e550bc86ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlacementSystem
-  availableBuildings:
-  - {fileID: 11400000, guid: dbea8c6e125c354499134c4c769a5da3, type: 2}
-  - {fileID: 11400000, guid: 469e4f899e38cc9488ac8cc77feedc38, type: 2}
   startIndex: 0
   mainCamera: {fileID: 1883170507}
   buildingsParent: {fileID: 1176320933}
