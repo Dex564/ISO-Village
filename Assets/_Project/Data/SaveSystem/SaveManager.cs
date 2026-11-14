@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -101,10 +101,18 @@ public static class SaveManager
         try
         {
             Directory.CreateDirectory(SavesDir);
-            File.WriteAllText(WorldPath(CurrentWorldId), JsonUtility.ToJson(Current, true));
+            WriteAtomic(WorldPath(CurrentWorldId), JsonUtility.ToJson(Current, true));
             Debug.Log("[Save] Сохранено");
         }
         catch (Exception e) { Debug.LogError($"[Save] Ошибка: {e}"); }
+    }
+
+    private static void WriteAtomic(string path, string json)
+    {
+        string tmp = path + ".tmp";
+        File.WriteAllText(tmp, json);
+        if (File.Exists(path)) File.Replace(tmp, path, null);
+        else File.Move(tmp, path);
     }
 
     public static void DeleteWorld(string id)
