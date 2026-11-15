@@ -19,6 +19,6 @@ MonoBehaviour:
   skill: 0
   requiredSkillLevel: 1
   baseWorkSeconds: 1.5
-  minWorkSeconds: 0.5
+  minWorkSeconds: 0.05
   minPool: 4
-  maxPool: 8
+  maxPool: 80

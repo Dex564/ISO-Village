@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Human
   m_EditorClassIdentifier: Assembly-CSharp::RaceData
   raceName: "\u0427\u0435\u043B\u043E\u0432\u0435\u043A"
-  moveSpeed: 1.5
+  moveSpeed: 3
   skills:
   - skill: 0
     level: 1
-    speed: 1
+    speed: 10

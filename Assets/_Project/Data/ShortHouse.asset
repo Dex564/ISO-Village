@@ -15,7 +15,11 @@ MonoBehaviour:
   buildingNameID: ShortHouse
   buildingName: "\u041D\u0438\u0437\u043A\u0438\u0439 \u0434\u043E\u043C\u0438\u043A"
   buildingPrefab: {fileID: 4009902542816301566, guid: 515edb4468b52384b874682e0bd3ba08, type: 3}
+<<<<<<< HEAD
   footprint: {x: 2, y: 4}
+=======
+  footprint: {x: 3, y: 2}
+>>>>>>> 3465b9a19831900ca26d5e16cd1af95d5fcea7a8
   coins: 5
   wood: 25
   stone: 30
