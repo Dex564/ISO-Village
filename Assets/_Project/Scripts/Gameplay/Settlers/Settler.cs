@@ -3,13 +3,18 @@ using UnityEngine;
 
 /// <summary>
 /// Поселенец: ходит по клеткам по найденному пути и добывает ресурсы.
-/// Физики нет: позиция просто двигается от центра клетки к центру следующей.
+/// У него есть имя, раса и навыки с уровнями, которые растут от работы.
 /// Ручные приказы: MoveTo(клетка) и Mine(ресурс).
 /// Автоматически: когда свободен, берёт у JobBoard ближайший помеченный ресурс, который умеет добывать.
 /// </summary>
 public class Settler : MonoBehaviour
 {
     private enum State { Idle, Moving, Mining }
+
+    /// <summary>Все поселенцы в сцене (для выбора мышью и списков).</summary>
+    public static readonly List<Settler> All = new List<Settler>();
+
+    private const int FallbackMaxLevel = 3; // потолок навыков, если раса не задана
 
     private static readonly int XHash = Animator.StringToHash("X");
     private static readonly int YHash = Animator.StringToHash("Y");
@@ -22,9 +27,13 @@ public class Settler : MonoBehaviour
         new Vector2(-1,  0), new Vector2(-1, -1), new Vector2( 0, -1), new Vector2( 1, -1)
     };
 
-    [Header("Раса и движение")]
-    [Tooltip("Раса определяет скорость ходьбы и умения. Если не задана, умеет всё со скоростью 1.")]
+    [Header("Личность")]
+    [Tooltip("Если пусто, берётся имя объекта")]
+    [SerializeField] private string settlerName;
     [SerializeField] private RaceData race;
+    [SerializeField] private SettlerSkills skills = new SettlerSkills();
+
+    [Header("Движение")]
     [Tooltip("Скорость ходьбы, если раса не задана (единиц мира в секунду)")]
     [SerializeField] private float fallbackMoveSpeed = 1.5f;
     [SerializeField] private Vector2Int startCell = Vector2Int.zero;
@@ -41,9 +50,33 @@ public class Settler : MonoBehaviour
     [Header("Отладка")]
     [SerializeField] private bool drawPath = true;
 
+    // ----- Публичные данные (для интерфейса и других систем) -----
+
+    public string DisplayName => string.IsNullOrEmpty(settlerName) ? gameObject.name : settlerName;
+    public RaceData Race => race;
+    public SettlerSkills Skills => skills;
+
     /// <summary>Последняя клетка, до центра которой поселенец дошёл.</summary>
     public Vector2Int CellPos { get; private set; }
-    public RaceData Race => race;
+
+    /// <summary>Текст состояния для панели информации.</summary>
+    public string StatusText
+    {
+        get
+        {
+            switch (state)
+            {
+                case State.Moving:
+                    return targetNode != null ? $"Идёт к ресурсу: {targetNode.Data.displayName}" : "Идёт";
+                case State.Mining:
+                    return targetNode != null
+                        ? $"Добывает: {targetNode.Data.displayName} (осталось {targetNode.Remaining})"
+                        : "Работает";
+                default:
+                    return "Свободен";
+            }
+        }
+    }
 
     private float MoveSpeed => race != null ? race.moveSpeed : fallbackMoveSpeed;
 
@@ -58,23 +91,65 @@ public class Settler : MonoBehaviour
     private float nextJobCheck;
     private bool holdAutoWork;
 
+    private SpriteRenderer bodyRenderer;
+    private SpriteRenderer marker;
+
     private Vector2 facing = new Vector2(0f, -1f);
 
     // ---------- Умения ----------
 
-    /// <summary>Может ли этот поселенец добывать такой ресурс (по навыку и его уровню).</summary>
-    public bool CanWork(ResourceNodeData resource)
+    /// <summary>Потолок уровня навыка для этого поселенца (задаёт раса).</summary>
+    public int GetMaxLevel(WorkSkill skill)
     {
-        if (resource == null) return false;
-        return race == null || race.CanWork(resource.skill, resource.requiredSkillLevel);
+        return race != null ? race.GetMaxLevel(skill) : FallbackMaxLevel;
     }
 
+    /// <summary>Может ли добывать такой ресурс: хватает ли уровня нужного навыка.</summary>
+    public bool CanWork(ResourceNodeData resource)
+    {
+        return skills.CanWork(resource);
+    }
+
+    // Скорость = эффект уровня навыка * особенности расы.
     private float SkillSpeed(ResourceNodeData resource)
     {
-        return race != null ? race.GetSpeed(resource.skill) : 1f;
+        float levelBonus = SkillProgression.SpeedMultiplier(skills.GetLevel(resource.skill));
+        float raceBonus = race != null ? race.GetWorkSpeedMultiplier(resource.skill) : 1f;
+        return levelBonus * raceBonus;
+    }
+
+    private void GainXp(ResourceNodeData resource)
+    {
+        float multiplier = race != null ? race.GetXpMultiplier(resource.skill) : 1f;
+        float xp = resource.xpPerAction * multiplier;
+
+        if (skills.AddXp(resource.skill, xp, GetMaxLevel(resource.skill)))
+        {
+            Debug.Log($"{DisplayName}: навык «{resource.skill.DisplayName()}» повышен до {skills.GetLevel(resource.skill)} уровня.");
+        }
     }
 
     // ---------- Unity ----------
+
+    private void Awake()
+    {
+        if (race == null) Debug.LogWarning($"Settler {name}: не назначена раса, навыки будут по умолчанию.");
+        skills.EnsureFor(race);
+
+        bodyRenderer = animator != null
+            ? animator.GetComponentInChildren<SpriteRenderer>()
+            : GetComponentInChildren<SpriteRenderer>();
+    }
+
+    private void OnEnable()
+    {
+        if (!All.Contains(this)) All.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        All.Remove(this);
+    }
 
     private void Update()
     {
@@ -108,6 +183,40 @@ public class Settler : MonoBehaviour
         return true;
     }
 
+    // ---------- Выбор мышью ----------
+
+    /// <summary>Попадает ли точка мира (с запасом padding) в спрайт поселенца.</summary>
+    public bool ContainsPoint(Vector2 world, float padding)
+    {
+        if (bodyRenderer == null) return false;
+
+        Bounds b = bodyRenderer.bounds;
+        b.Expand(padding * 2f);
+        return world.x >= b.min.x && world.x <= b.max.x && world.y >= b.min.y && world.y <= b.max.y;
+    }
+
+    public void SetSelected(bool selected)
+    {
+        if (selected && marker == null) CreateMarker();
+        if (marker != null) marker.enabled = selected;
+    }
+
+    // Зелёный ромб под ногами выбранного поселенца.
+    private void CreateMarker()
+    {
+        var go = new GameObject("SelectionMarker");
+        go.transform.SetParent(transform, false);
+        go.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
+
+        marker = go.AddComponent<SpriteRenderer>();
+        marker.sprite = CellSprites.Diamond;
+        marker.color = new Color(0.4f, 1f, 0.5f, 0.9f);
+
+        if (System.Array.Exists(SortingLayer.layers, l => l.name == "Overlay"))
+            marker.sortingLayerName = "Overlay";
+        marker.sortingOrder = -1;
+    }
+
     // ---------- Ручные приказы ----------
 
     /// <summary>Идти в клетку goal. Возвращает false, если пути нет (тогда прошлое занятие не прерывается).</summary>
@@ -119,7 +228,7 @@ public class Settler : MonoBehaviour
         List<Vector2Int> newPath = Pathfinder.FindPath(WorldMap.Instance, from, goal);
         if (newPath == null)
         {
-            Debug.Log($"Settler: пути в клетку {goal} нет.");
+            Debug.Log($"{DisplayName}: пути в клетку {goal} нет.");
             return false;
         }
 
@@ -138,13 +247,14 @@ public class Settler : MonoBehaviour
 
         if (!CanWork(node.Data))
         {
-            Debug.Log($"Settler: не умеет добывать «{node.Data.displayName}».");
+            Debug.Log($"{DisplayName}: не умеет добывать «{node.Data.displayName}» " +
+                      $"(нужен навык «{node.Data.skill.DisplayName()}» уровня {node.Data.requiredSkillLevel}).");
             return false;
         }
 
         if (node.ClaimedBy != null && node.ClaimedBy != this)
         {
-            Debug.Log("Settler: этот ресурс уже добывает другой поселенец.");
+            Debug.Log($"{DisplayName}: этот ресурс уже добывает другой поселенец.");
             return false;
         }
 
@@ -152,7 +262,7 @@ public class Settler : MonoBehaviour
         List<Vector2Int> newPath = Pathfinder.FindPathToNeighbour(WorldMap.Instance, from, node.CellPos);
         if (newPath == null)
         {
-            Debug.Log("Settler: к ресурсу не подойти.");
+            Debug.Log($"{DisplayName}: к ресурсу не подойти.");
             return false;
         }
 
@@ -282,8 +392,16 @@ public class Settler : MonoBehaviour
         if (mineTimer < seconds) return;
         mineTimer -= seconds;
 
-        int got = targetNode.Harvest(resource.yieldPerAction);
-        if (got > 0) ResourceService.Add(resource.yieldType, got);
+        int taken = targetNode.Harvest(resource.yieldPerAction);
+        if (taken > 0)
+        {
+            // Бонус расы (например, шанс удвоить руду) добавляется сверх запаса ресурса.
+            float bonus = race != null ? race.RollYieldMultiplier(resource.skill) : 1f;
+            int amount = Mathf.Max(taken, Mathf.RoundToInt(taken * bonus));
+
+            ResourceService.Add(resource.yieldType, amount);
+            GainXp(resource);
+        }
 
         if (targetNode.IsDepleted) StopWork();
     }
@@ -350,7 +468,7 @@ public class Settler : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-        UnityEditor.Handles.Label(transform.position + Vector3.up * 0.6f, state.ToString());
+        UnityEditor.Handles.Label(transform.position + Vector3.up * 0.6f, $"{DisplayName}: {state}");
 #endif
     }
 }

@@ -27,6 +27,10 @@ public class ResourceNodeData : ScriptableObject
     [Tooltip("Быстрее этого времени добыть нельзя, как бы силён ни был поселенец (предел скорости добычи)")]
     [Min(0.05f)] public float minWorkSeconds = 0.5f;
 
+    [Header("Опыт")]
+    [Tooltip("Сколько опыта навыка получает поселенец за одну порцию")]
+    [Min(0f)] public float xpPerAction = 1f;
+
     [Header("Запас (пул)")]
     [Min(1)] public int minPool = 4;
     [Min(1)] public int maxPool = 8;

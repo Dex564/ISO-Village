@@ -46,6 +46,7 @@ public class AreaSelector : MonoBehaviour
     private bool hasLast;
     private int targetCount;
     private bool tooLarge;
+    public bool IsModeActive => active != null;
 
     private void Reset()
     {

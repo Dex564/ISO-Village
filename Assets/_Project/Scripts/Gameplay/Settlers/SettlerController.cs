@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 /// <summary>
-/// Приказы поселенцу мышью. По умолчанию ПКМ (ЛКМ занята строительством):
-/// на камень значит добывать, на свободную клетку значит идти.
+/// Приказы выбранному поселенцу мышью. По умолчанию ПКМ (ЛКМ занята выбором и строительством):
+/// на ресурс значит добывать, на свободную клетку значит идти.
+/// Кого слушаться, определяет SelectionManager.
 /// </summary>
 public class SettlerController : MonoBehaviour
 {
-    [SerializeField] private Settler settler;
     [SerializeField] private Camera mainCamera;
     [Tooltip("0 = ЛКМ, 1 = ПКМ")]
     [SerializeField] private int orderMouseButton = 1;
@@ -18,7 +19,12 @@ public class SettlerController : MonoBehaviour
 
     private void Update()
     {
-        if (settler == null || !Input.GetMouseButtonDown(orderMouseButton)) return;
+        if (!Input.GetMouseButtonDown(orderMouseButton)) return;
+
+        Settler settler = SelectionManager.Instance != null ? SelectionManager.Instance.Selected : null;
+        if (settler == null) return; // никто не выбран
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
         WorldMap map = WorldMap.Instance;
         if (map == null || map.Size == 0) return;
