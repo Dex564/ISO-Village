@@ -2000,6 +2000,9 @@ MonoBehaviour:
   availableBuildings:
   - {fileID: 11400000, guid: dbea8c6e125c354499134c4c769a5da3, type: 2}
   - {fileID: 11400000, guid: 469e4f899e38cc9488ac8cc77feedc38, type: 2}
+  - {fileID: 11400000, guid: 39b4eef725a231a4daee348099646996, type: 2}
+  - {fileID: 11400000, guid: e44c0173e66d51543b52b19923dfd02c, type: 2}
+  - {fileID: 11400000, guid: 2de45577b9aa42649a493204659bd423, type: 2}
   buildingsParent: {fileID: 1176320933}
 --- !u!4 &1937569016
 Transform:
