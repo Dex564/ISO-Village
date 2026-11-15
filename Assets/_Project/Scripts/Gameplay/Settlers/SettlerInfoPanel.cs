@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 /// <summary>
 /// Панель справа с информацией о выбранном поселенце: имя, раса, состояние, навыки и особенности расы.
@@ -21,6 +22,7 @@ public class SettlerInfoPanel : MonoBehaviour
     private Settler shownFor;
     private float nextRefresh;
     private readonly System.Text.StringBuilder sb = new System.Text.StringBuilder(512);
+    private readonly Dictionary<ResourceNodeData, int> totals = new Dictionary<ResourceNodeData, int>();
 
     private void Awake()
     {
@@ -61,6 +63,8 @@ public class SettlerInfoPanel : MonoBehaviour
         sb.Append("<b><size=").Append(fontSize + 6).Append('>').Append(s.DisplayName).Append("</size></b>\n");
         sb.Append(s.Race != null ? s.Race.raceName : "Без расы").Append('\n');
         sb.Append("<color=#AAAAAA>").Append(s.StatusText).Append("</color>\n\n");
+
+        AppendWorkSpeed(s);
 
         sb.Append("<b>Навыки</b>\n");
         if (s.Skills.All.Count == 0) sb.Append("<color=#AAAAAA>нет</color>\n");
@@ -151,5 +155,49 @@ public class SettlerInfoPanel : MonoBehaviour
             Debug.LogWarning("SettlerInfoPanel: не удалось загрузить шрифт. Назначь шрифт в поле Font.");
 
         panelRoot.SetActive(false);
+    }
+
+    private void AppendWorkSpeed(Settler s)
+    {
+        sb.Append("<b>Скорость работы</b>\n");
+
+        ResourceNodeData res = s.WorkResource;
+        if (res == null)
+        {
+            sb.Append("<color=#AAAAAA>ещё не работал</color>\n");
+        }
+        else if (!s.CanWork(res))
+        {
+            sb.Append(res.displayName).Append(": <color=#AAAAAA>не умеет</color>\n");
+        }
+        else
+        {
+            float seconds = s.GetSecondsPerAction(res);
+            bool capped = seconds <= res.minWorkSeconds + 0.001f;
+
+            sb.Append(res.displayName).Append(": ")
+              .Append(s.GetTheoreticalRate(res).ToString("0.00")).Append(" ед/с")
+              .Append("  <color=#AAAAAA>(порция за ").Append(seconds.ToString("0.0")).Append(" с)</color>");
+            if (capped) sb.Append("  <color=#FFD54F>предел</color>");
+            sb.Append('\n');
+        }
+
+        s.GetRecentTotals(totals);
+        float window = s.RateWindowSeconds;
+
+        sb.Append("<color=#AAAAAA>За последние ").Append(Mathf.RoundToInt(window)).Append(" с:</color>\n");
+        if (totals.Count == 0)
+        {
+            sb.Append("<color=#AAAAAA>пока ничего не добыто</color>\n");
+        }
+        else
+        {
+            foreach (KeyValuePair<ResourceNodeData, int> kv in totals)
+            {
+                sb.Append(kv.Key.displayName).Append(": ").Append(kv.Value)
+                  .Append("  <color=#AAAAAA>(").Append((kv.Value / window).ToString("0.00")).Append("/с)</color>\n");
+            }
+        }
+        sb.Append('\n');
     }
 }

@@ -112,6 +112,20 @@ public class RaceData : ScriptableObject
         return result;
     }
 
+    /// <summary>Средний множитель добычи от бонусов (без случайности). Для показа скорости в интерфейсе.</summary>
+    public float GetExpectedYieldMultiplier(WorkSkill skill)
+    {
+        float result = 1f;
+        if (modifiers == null) return result;
+
+        foreach (RaceModifier m in modifiers)
+        {
+            if (m.type != RaceModifierType.BonusYield || m.skill != skill) continue;
+            result *= 1f + m.chance * (Mathf.Max(1f, m.value) - 1f);
+        }
+        return result;
+    }
+
     private float ProductOf(RaceModifierType type, WorkSkill skill)
     {
         float result = 1f;

@@ -136,6 +136,8 @@ public class Settler : MonoBehaviour
         if (race == null) Debug.LogWarning($"Settler {name}: не назначена раса, навыки будут по умолчанию.");
         skills.EnsureFor(race);
 
+        statsStartTime = Time.time;
+
         bodyRenderer = animator != null
             ? animator.GetComponentInChildren<SpriteRenderer>()
             : GetComponentInChildren<SpriteRenderer>();
@@ -386,6 +388,7 @@ public class Settler : MonoBehaviour
         }
 
         ResourceNodeData resource = targetNode.Data;
+        lastResource = resource;
         float seconds = resource.GetWorkSeconds(SkillSpeed(resource));
 
         mineTimer += Time.deltaTime;
@@ -400,6 +403,7 @@ public class Settler : MonoBehaviour
             int amount = Mathf.Max(taken, Mathf.RoundToInt(taken * bonus));
 
             ResourceService.Add(resource.yieldType, amount);
+            RecordWork(resource, amount);
             GainXp(resource);
         }
 
@@ -452,6 +456,67 @@ public class Settler : MonoBehaviour
         animator.SetBool(IsMovingHash, moving);
     }
 
+    // ---------- Статистика работы (для панели справа) ----------
+
+    private const float RateWindow = 30f;   // за сколько последних секунд считаем фактическую скорость
+
+    private struct WorkRecord
+    {
+        public float time;
+        public ResourceNodeData resource;
+        public int amount;
+    }
+
+    private readonly Queue<WorkRecord> workLog = new Queue<WorkRecord>();
+    private float statsStartTime;
+    private ResourceNodeData lastResource;
+
+    /// <summary>Ресурс, с которым поселенец работает сейчас, а если не работает, то последний.</summary>
+    public ResourceNodeData WorkResource => targetNode != null ? targetNode.Data : lastResource;
+
+    /// <summary>Сколько секунд занимает одна порция этого ресурса у этого поселенца.</summary>
+    public float GetSecondsPerAction(ResourceNodeData resource)
+    {
+        return resource.GetWorkSeconds(SkillSpeed(resource));
+    }
+
+    /// <summary>Расчётная скорость добычи, единиц в секунду (без ходьбы). 0, если не умеет.</summary>
+    public float GetTheoreticalRate(ResourceNodeData resource)
+    {
+        if (resource == null || !CanWork(resource)) return 0f;
+
+        float bonus = race != null ? race.GetExpectedYieldMultiplier(resource.skill) : 1f;
+        return resource.yieldPerAction * bonus / GetSecondsPerAction(resource);
+    }
+
+    /// <summary>Окно усреднения: пока поселенец «живёт» меньше 30 с, делим на реальное время.</summary>
+    public float RateWindowSeconds => Mathf.Clamp(Time.time - statsStartTime, 1f, RateWindow);
+
+    /// <summary>Сколько каждого ресурса добыто за последнее окно.</summary>
+    public void GetRecentTotals(Dictionary<ResourceNodeData, int> totals)
+    {
+        totals.Clear();
+        TrimWorkLog();
+
+        foreach (WorkRecord r in workLog)
+        {
+            totals.TryGetValue(r.resource, out int sum);
+            totals[r.resource] = sum + r.amount;
+        }
+    }
+
+    private void RecordWork(ResourceNodeData resource, int amount)
+    {
+        workLog.Enqueue(new WorkRecord { time = Time.time, resource = resource, amount = amount });
+        TrimWorkLog();
+    }
+
+    private void TrimWorkLog()
+    {
+        float oldest = Time.time - RateWindow;
+        while (workLog.Count > 0 && workLog.Peek().time < oldest) workLog.Dequeue();
+    }
+
     // ---------- Отладка ----------
 
     private void OnDrawGizmos()
@@ -467,8 +532,8 @@ public class Settler : MonoBehaviour
             prev = p;
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
         UnityEditor.Handles.Label(transform.position + Vector3.up * 0.6f, $"{DisplayName}: {state}");
-#endif
+    #endif
     }
 }
